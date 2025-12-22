@@ -1,0 +1,18 @@
+export enum Operator {
+  AND = 'AND',
+  OR = 'OR',
+  NOT = 'NOT',
+  EQUALS = '=',
+  NOT_EQUALS = '!=',
+  GREATER_THAN = '>',
+  LESS_THAN = '<',
+  GREATER_THAN_OR_EQUAL = '>=',
+  LESS_THAN_OR_EQUAL = '<=',
+  LIKE = 'LIKE',
+  MINUS = '-',
+  PLUS = '+',
+  MULTIPLY = '*',
+  DIVIDE = '/',
+  IS_NULL = 'IS NULL',
+  IS_NOT_NULL = 'IS NOT NULL',
+}

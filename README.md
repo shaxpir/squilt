@@ -1,2 +1,133 @@
-# squilt
+# Squilt
+
 A lightweight, zero-dependency TypeScript library for building SQL queries through a fluent AST API. Constructs type-safe query objects and serializes them to clean SQL strings—no database interaction, just pure query building for SQLite (and beyond).
+
+## Installation
+
+```bash
+npm install @shaxpir/squilt
+```
+
+## Usage
+
+### Using the Shorthand API
+
+The shorthand API provides a concise, SQL-like syntax for building queries:
+
+```typescript
+import { SELECT, FROM, COLUMN, EQ, JOIN, ORDER_BY } from '@shaxpir/squilt';
+import { OrderByDirection } from '@shaxpir/squilt';
+
+const query = SELECT(
+  FROM('users').as('u'),
+  COLUMN('u', 'id'),
+  COLUMN('u', 'name'),
+  JOIN('orders', 'o', EQ(COLUMN('u', 'id'), COLUMN('o', 'user_id')))
+)
+.where(EQ(COLUMN('u', 'active'), true))
+.orderBy(COLUMN('u', 'name'), OrderByDirection.ASC)
+.limit(10);
+
+console.log(query.toSQL());
+// SELECT
+//   u.id,
+//   u.name
+// FROM users u
+// INNER JOIN orders o ON (u.id = o.user_id)
+// WHERE (u.active = 1)
+// ORDER BY u.name ASC
+// LIMIT 10
+```
+
+### Using the QueryBuilder API
+
+For more control, use the fluent QueryBuilder API:
+
+```typescript
+import { QueryBuilder, Column, TableFrom, Alias } from '@shaxpir/squilt';
+
+const query = QueryBuilder.select()
+  .from(new Alias(new TableFrom('users'), 'u'))
+  .column(new Column('u', 'id'))
+  .column(new Column('u', 'name'))
+  .limit(10);
+```
+
+### Rendering Options
+
+Squilt supports both compact and indented rendering:
+
+```typescript
+import { CompactQueryRenderer, IndentedQueryRenderer } from '@shaxpir/squilt';
+
+// Compact output (single line)
+query.toSQL(new CompactQueryRenderer());
+// SELECT u.id, u.name FROM users u LIMIT 10
+
+// Indented output (multi-line, 2-space indent)
+query.toSQL(new IndentedQueryRenderer(2));
+// SELECT
+//   u.id,
+//   u.name
+// FROM users u
+// LIMIT 10
+```
+
+### Parameterized Queries
+
+Use named parameters for safe value binding:
+
+```typescript
+import { SELECT, FROM, COLUMN, EQ, PARAM, ParamCollectingVisitor } from '@shaxpir/squilt';
+
+const query = SELECT(FROM('users'), COLUMN('*'))
+  .where(EQ(COLUMN('id'), PARAM('userId')));
+
+const sql = query.toSQL();  // SELECT * FROM users WHERE (id = ?)
+
+// Collect parameter values in order
+const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
+// params = [42]
+```
+
+## Features
+
+- **Type-safe AST**: Build queries programmatically with full TypeScript support
+- **Fluent API**: Chain methods for readable query construction
+- **Two rendering modes**: Compact for production, indented for debugging
+- **SQLite-focused**: Supports SQLite-specific features like `json_each`
+- **Query validation**: Detect errors before execution
+- **Zero dependencies**: No external runtime dependencies
+
+## API Reference
+
+### Shorthand Functions
+
+| Function | Description |
+|----------|-------------|
+| `SELECT(...args)` | Create a SELECT query |
+| `SELECT_DISTINCT(...args)` | Create a SELECT DISTINCT query |
+| `FROM(table)` | Create a FROM clause |
+| `COLUMN(name)` or `COLUMN(table, name)` | Reference a column |
+| `EQ`, `NOT_EQ`, `GT`, `LT`, `GTE`, `LTE` | Comparison operators |
+| `AND`, `OR`, `NOT` | Logical operators |
+| `LIKE`, `IN`, `NOT_IN` | Pattern matching |
+| `JOIN`, `LEFT_JOIN`, `CROSS_JOIN` | Join clauses |
+| `FN(name, ...args)` | Function calls |
+| `CASE([...cases])` | CASE expressions |
+| `WITH(name, query)` | Common Table Expressions |
+| `INSERT`, `INSERT_OR_REPLACE` | Insert statements |
+
+### Renderers
+
+- `CompactQueryRenderer`: Single-line output
+- `IndentedQueryRenderer(spaces)`: Multi-line output with configurable indentation
+
+### Validators
+
+- `CommonQueryValidator`: General SQL validation
+- `SQLiteQueryValidator`: SQLite-specific validation
+
+## License
+
+Apache 2.0
