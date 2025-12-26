@@ -281,9 +281,9 @@ SELECT(FROM('all_users'), COLUMN('id'))
 
 ## Expression Enhancements
 
-### CAST Expressions
+### CAST Expressions ✅
 
-Type conversion in expressions.
+Type conversion in expressions. **Implemented!**
 
 ```typescript
 CAST(COLUMN('price'), 'INTEGER')
@@ -292,42 +292,47 @@ CAST(COLUMN('json_data'), 'TEXT')
 // Would generate: CAST(price AS INTEGER)
 ```
 
-### GLOB Operator
+### GLOB Operator ✅
 
-Unix-style pattern matching (case-sensitive, unlike LIKE).
+Unix-style pattern matching (case-sensitive, unlike LIKE). **Implemented!**
 
 ```typescript
 GLOB(COLUMN('filename'), '*.txt')
-NOT_GLOB(COLUMN('path'), '/tmp/*')
 
 // Would generate: (filename GLOB '*.txt')
 ```
 
-### COLLATE Operator
+### COLLATE Operator ✅
 
-Specify collation for string comparisons.
+Specify collation for string comparisons. **Implemented!**
 
 ```typescript
-ORDER_BY(COLUMN('name').collate('NOCASE'))
-EQ(COLUMN('a').collate('BINARY'), COLUMN('b'))
+COLLATE(COLUMN('name'), 'NOCASE')
 
-// Would generate: ORDER BY name COLLATE NOCASE
+// Would generate: name COLLATE NOCASE
 ```
 
-### Subquery Expressions
+### Subquery Expressions ✅
 
-Scalar subqueries anywhere expressions are allowed.
+Scalar subqueries anywhere expressions are allowed. **Implemented!**
 
 ```typescript
 // Scalar subquery in SELECT
 SELECT(
   FROM('orders'),
   COLUMN('id'),
-  SUBQUERY(
-    SELECT(FROM('users'), COLUMN('name'))
-      .where(EQ(COLUMN('users', 'id'), COLUMN('orders', 'user_id')))
-  ).as('user_name')
+  ALIAS(
+    SUBQUERY(
+      SELECT(FROM('users'), COLUMN('name'))
+        .where(EQ(COLUMN('users', 'id'), COLUMN('orders', 'user_id')))
+    ),
+    'user_name'
+  )
 )
+
+// Subquery in WHERE
+SELECT(FROM('products'), COLUMN('name'))
+  .where(GT(COLUMN('price'), SUBQUERY(SELECT(FROM('products'), FN('AVG', COLUMN('price'))))))
 
 // Subquery in CASE
 CASE([
@@ -443,3 +448,7 @@ interface UsersRow {
 - [x] Query validation (CommonQueryValidator, SQLiteQueryValidator)
 - [x] Compact and indented rendering modes
 - [x] Query cloning and transformation (QueryIdentityTransformer)
+- [x] CAST expressions for type conversion
+- [x] GLOB operator for Unix-style pattern matching
+- [x] COLLATE operator for specifying collation
+- [x] Scalar subquery expressions in SELECT, WHERE, CASE, and function arguments
