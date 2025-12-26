@@ -257,9 +257,9 @@ DELETE_FROM('sessions')
   .returning(COLUMN('user_id'));
 ```
 
-### INTERSECT and EXCEPT
+### INTERSECT and EXCEPT ✅
 
-Complete the set operations (UNION already exists).
+Complete the set operations (UNION already exists). **Implemented!**
 
 ```typescript
 // INTERSECT - rows in both queries
@@ -426,6 +426,7 @@ interface UsersRow {
 - [x] UPDATE queries with SET clauses and WHERE conditions
 - [x] RETURNING clause for INSERT, UPDATE, DELETE (SQLite 3.35+)
 - [x] INSERT ... SELECT for bulk inserts from query results
+- [x] INTERSECT and EXCEPT set operations
 - [x] BETWEEN and NOT BETWEEN operators for range queries
 - [x] Comprehensive expression system (binary, unary, functions, literals)
 - [x] Parameter binding with named parameters

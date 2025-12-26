@@ -158,6 +158,12 @@ export class IndentedQueryRenderer
     if (node['_union'].length > 0) {
       parts.push(node['_union'].map(u => `${this.getIndent()}UNION\n${u.accept(this)}`).join('\n'));
     }
+    if (node['_intersect'].length > 0) {
+      parts.push(node['_intersect'].map(i => `${this.getIndent()}INTERSECT\n${i.accept(this)}`).join('\n'));
+    }
+    if (node['_except'].length > 0) {
+      parts.push(node['_except'].map(e => `${this.getIndent()}EXCEPT\n${e.accept(this)}`).join('\n'));
+    }
     if (node['_orderBy'].length > 0) {
       parts.push(`${this.getIndent()}ORDER BY ${node['_orderBy'].map(o => o.accept(this)).join(', ')}`);
     }

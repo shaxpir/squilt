@@ -125,6 +125,12 @@ export class CompactQueryRenderer
     if (node['_union'].length > 0) {
       parts.push(node['_union'].map(u => `UNION ${u.accept(this)}`).join(' '));
     }
+    if (node['_intersect'].length > 0) {
+      parts.push(node['_intersect'].map(i => `INTERSECT ${i.accept(this)}`).join(' '));
+    }
+    if (node['_except'].length > 0) {
+      parts.push(node['_except'].map(e => `EXCEPT ${e.accept(this)}`).join(' '));
+    }
     if (node['_orderBy'].length > 0) {
       parts.push(`ORDER BY ${node['_orderBy'].map(o => o.accept(this)).join(', ')}`);
     }

@@ -149,6 +149,40 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
         }
       }
     }
+    if (node['_intersect'].length > 0) {
+      if (node['_columns'].length === 0 && node['_fromsAndJoins'].length === 0) {
+        throw new Error("A query with INTERSECT subqueries must have columns and a FROM clause in the main query");
+      }
+      let columnCounts = [];
+      if (node['_columns'].length > 0) {
+        columnCounts.push(node['_columns'].length);
+      }
+      columnCounts = columnCounts.concat(node['_intersect'].map(i => i['_columns'].length || 1));
+      if (columnCounts.length > 1) {
+        const firstCount = columnCounts[0];
+        if (columnCounts.some(count => count !== firstCount)) {
+          throw new Error('INTERSECT queries must have the same number of columns');
+        }
+      }
+      node['_intersect'].forEach(i => i.accept(this));
+    }
+    if (node['_except'].length > 0) {
+      if (node['_columns'].length === 0 && node['_fromsAndJoins'].length === 0) {
+        throw new Error("A query with EXCEPT subqueries must have columns and a FROM clause in the main query");
+      }
+      let columnCounts = [];
+      if (node['_columns'].length > 0) {
+        columnCounts.push(node['_columns'].length);
+      }
+      columnCounts = columnCounts.concat(node['_except'].map(e => e['_columns'].length || 1));
+      if (columnCounts.length > 1) {
+        const firstCount = columnCounts[0];
+        if (columnCounts.some(count => count !== firstCount)) {
+          throw new Error('EXCEPT queries must have the same number of columns');
+        }
+      }
+      node['_except'].forEach(e => e.accept(this));
+    }
     node['_orderBy'].forEach(o => o.accept(this));
     if (node['_limit'] !== null && node['_limit'] !== undefined && node['_limit'] < 0) {
       throw new Error('LIMIT must be non-negative');

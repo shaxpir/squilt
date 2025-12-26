@@ -72,6 +72,8 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     newQuery['_groupBy'] = this.flatList(node['_groupBy'].map(g => g.accept(this))) as Column[];
     if (node['_having']) newQuery['_having'] = this.expectSingle(node['_having'].accept(this), 'HAVING') as Expression;
     newQuery['_union'] = this.flatList(node['_union'].map(u => u.accept(this))) as SelectQuery[];
+    newQuery['_intersect'] = this.flatList(node['_intersect'].map(i => i.accept(this))) as SelectQuery[];
+    newQuery['_except'] = this.flatList(node['_except'].map(e => e.accept(this))) as SelectQuery[];
     newQuery['_orderBy'] = this.flatList(node['_orderBy'].map(o => o.accept(this))) as OrderBy[];
     newQuery['_offset'] = node['_offset'];
     newQuery['_limit'] = node['_limit'];

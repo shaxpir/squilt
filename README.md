@@ -218,6 +218,38 @@ console.log(copyWithIds.toSQL());
 // INSERT INTO new_table (name, value) SELECT name, value FROM old_table RETURNING id
 ```
 
+### Set Operations: UNION, INTERSECT, EXCEPT
+
+Combine query results with set operations:
+
+```typescript
+import { SELECT, FROM, COLUMN, EQ } from '@shaxpir/squilt';
+
+// UNION - combine results from multiple queries (already supported)
+const allEmails = SELECT(FROM('customers'), COLUMN('email'))
+  .union(SELECT(FROM('subscribers'), COLUMN('email')));
+console.log(allEmails.toSQL());
+// SELECT email FROM customers UNION SELECT email FROM subscribers
+
+// INTERSECT - rows that appear in both queries
+const commonEmails = SELECT(FROM('subscribers'), COLUMN('email'))
+  .intersect(SELECT(FROM('customers'), COLUMN('email')));
+console.log(commonEmails.toSQL());
+// SELECT email FROM subscribers INTERSECT SELECT email FROM customers
+
+// EXCEPT - rows in first query but not in second
+const activeUsers = SELECT(FROM('all_users'), COLUMN('id'))
+  .except(SELECT(FROM('banned_users'), COLUMN('user_id')));
+console.log(activeUsers.toSQL());
+// SELECT id FROM all_users EXCEPT SELECT user_id FROM banned_users
+
+// Combine multiple set operations
+const complexSet = SELECT(FROM('set_a'), COLUMN('id'))
+  .union(SELECT(FROM('set_b'), COLUMN('id')))
+  .intersect(SELECT(FROM('set_c'), COLUMN('id')))
+  .except(SELECT(FROM('set_d'), COLUMN('id')));
+```
+
 ### Range Queries with BETWEEN
 
 Use BETWEEN for range comparisons:
@@ -289,6 +321,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `FN(name, ...args)` | Function calls |
 | `CASE([...cases])` | CASE expressions |
 | `WITH(name, query)` | Common Table Expressions |
+| `UNION`, `INTERSECT`, `EXCEPT` | Set operations |
 | `INSERT`, `INSERT_INTO`, `INSERT_OR_REPLACE` | Insert statements |
 | `UPDATE(table)` | Update statements |
 | `DELETE_FROM(table)` | Delete statements |

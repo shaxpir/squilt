@@ -205,6 +205,18 @@ export function UNION(...queries: SelectQuery[]): SelectQuery {
   return query;
 }
 
+export function INTERSECT(...queries: SelectQuery[]): SelectQuery {
+  const query = QueryBuilder.select();
+  queries.forEach(q => query.intersect(q));
+  return query;
+}
+
+export function EXCEPT(...queries: SelectQuery[]): SelectQuery {
+  const query = QueryBuilder.select();
+  queries.forEach(q => query.except(q));
+  return query;
+}
+
 // --- Joins ---
 
 export function JOIN(tableName: string, alias: string, on: LazyExpression): Join {

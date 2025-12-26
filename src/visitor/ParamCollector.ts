@@ -71,6 +71,8 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
       node['_having'].accept(this);
     }
     node['_union'].forEach(u => u.accept(this));
+    node['_intersect'].forEach(i => i.accept(this));
+    node['_except'].forEach(e => e.accept(this));
     node['_orderBy'].forEach(o => o.accept(this));
     return this.params;
   }
