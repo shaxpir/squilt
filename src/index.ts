@@ -1,6 +1,7 @@
 // AST nodes
 export { SqlTreeNode, Aliasable, Expression, AliasableExpression } from './ast/Abstractions';
 export { Alias } from './ast/Alias';
+export { BetweenExpression } from './ast/BetweenExpression';
 export { BinaryExpression } from './ast/BinaryExpression';
 export { CaseExpression, CaseItem } from './ast/CaseExpression';
 export { Column, ColumnLike } from './ast/Column';
@@ -28,6 +29,7 @@ export {
   VAL,
   // Operators
   EQ, NOT_EQ, NOT, GT, LT, GTE, LTE, LIKE,
+  BETWEEN, NOT_BETWEEN,
   IS_NULL, IS_NOT_NULL,
   PLUS, MINUS, MULTIPLY, DIVIDE,
   AND, OR,

@@ -1,5 +1,6 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
@@ -111,6 +112,13 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
   visitBinaryExpression(node: BinaryExpression): any[] {
     node.left.accept(this);
     node.right.accept(this);
+    return this.params;
+  }
+
+  visitBetweenExpression(node: BetweenExpression): any[] {
+    node.operand.accept(this);
+    node.low.accept(this);
+    node.high.accept(this);
     return this.params;
   }
 

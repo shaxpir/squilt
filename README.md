@@ -143,6 +143,32 @@ console.log(bulkUpdate.toSQL());
 // UPDATE products SET price = 99, on_sale = 1, discount = 10 WHERE (category = 'electronics')
 ```
 
+### Range Queries with BETWEEN
+
+Use BETWEEN for range comparisons:
+
+```typescript
+import { SELECT, FROM, COLUMN, BETWEEN, NOT_BETWEEN, PARAM, AND } from '@shaxpir/squilt';
+
+// Price range query
+const priceFilter = SELECT(FROM('products'), COLUMN('*'))
+  .where(BETWEEN(COLUMN('price'), 10, 100));
+console.log(priceFilter.toSQL());
+// SELECT * FROM products WHERE (price BETWEEN 10 AND 100)
+
+// Date range with parameters
+const dateFilter = SELECT(FROM('orders'), COLUMN('*'))
+  .where(BETWEEN(COLUMN('created_at'), PARAM('startDate'), PARAM('endDate')));
+console.log(dateFilter.toSQL());
+// SELECT * FROM orders WHERE (created_at BETWEEN ? AND ?)
+
+// Exclude a range with NOT BETWEEN
+const excludeRange = SELECT(FROM('employees'), COLUMN('*'))
+  .where(NOT_BETWEEN(COLUMN('salary'), 50000, 100000));
+console.log(excludeRange.toSQL());
+// SELECT * FROM employees WHERE (salary NOT BETWEEN 50000 AND 100000)
+```
+
 ### Parameterized Queries
 
 Use named parameters for safe value binding:
@@ -180,6 +206,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `FROM(table)` | Create a FROM clause |
 | `COLUMN(name)` or `COLUMN(table, name)` | Reference a column |
 | `EQ`, `NOT_EQ`, `GT`, `LT`, `GTE`, `LTE` | Comparison operators |
+| `BETWEEN`, `NOT_BETWEEN` | Range operators |
 | `AND`, `OR`, `NOT` | Logical operators |
 | `LIKE`, `IN`, `NOT_IN` | Pattern matching |
 | `JOIN`, `LEFT_JOIN`, `CROSS_JOIN` | Join clauses |

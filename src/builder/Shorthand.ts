@@ -1,5 +1,6 @@
 import { AliasableExpression, Expression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
@@ -67,6 +68,14 @@ export function LTE(left: LazyExpression, right: LazyExpression): BinaryExpressi
 
 export function LIKE(left: LazyExpression, right: LazyExpression): BinaryExpression {
   return new BinaryExpression(LAZY(left), Operator.LIKE, LAZY(right));
+}
+
+export function BETWEEN(operand: LazyExpression, low: LazyExpression, high: LazyExpression): BetweenExpression {
+  return new BetweenExpression(LAZY(operand), LAZY(low), LAZY(high), false);
+}
+
+export function NOT_BETWEEN(operand: LazyExpression, low: LazyExpression, high: LazyExpression): BetweenExpression {
+  return new BetweenExpression(LAZY(operand), LAZY(low), LAZY(high), true);
 }
 
 export function IS_NULL(expr: LazyExpression): UnaryExpression {

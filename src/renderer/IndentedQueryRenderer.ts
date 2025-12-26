@@ -1,5 +1,6 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
@@ -217,6 +218,11 @@ export class IndentedQueryRenderer
 
   visitBinaryExpression(node: BinaryExpression): string {
     return `(${node.left.accept(this)} ${node.operator} ${node.right.accept(this)})`;
+  }
+
+  visitBetweenExpression(node: BetweenExpression): string {
+    const not = node.not ? ' NOT' : '';
+    return `(${node.operand.accept(this)}${not} BETWEEN ${node.low.accept(this)} AND ${node.high.accept(this)})`;
   }
 
   visitUnaryExpression(node: UnaryExpression): string {

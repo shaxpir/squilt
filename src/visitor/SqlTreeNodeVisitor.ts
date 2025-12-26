@@ -1,5 +1,6 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
@@ -32,6 +33,7 @@ export interface SqlTreeNodeVisitor<T> {
   visitColumn(node: Column): T;
   visitAlias(node: Alias<any>): T;
   visitBinaryExpression(node: BinaryExpression): T;
+  visitBetweenExpression(node: BetweenExpression): T;
   visitUnaryExpression(node: UnaryExpression): T;
   visitInExpression(node: InExpression): T;
   visitConcat(node: Concat): T;

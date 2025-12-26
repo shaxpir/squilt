@@ -1,5 +1,6 @@
 import { Aliasable, AliasableExpression, Expression, SqlTreeNode } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
@@ -143,6 +144,15 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
       this.expectSingle(node.left.accept(this), 'left') as Expression,
       node.operator,
       this.expectSingle(node.right.accept(this), 'right') as Expression
+    );
+  }
+
+  visitBetweenExpression(node: BetweenExpression): SqlTreeNode | SqlTreeNode[] {
+    return new BetweenExpression(
+      this.expectSingle(node.operand.accept(this), 'operand') as Expression,
+      this.expectSingle(node.low.accept(this), 'low') as Expression,
+      this.expectSingle(node.high.accept(this), 'high') as Expression,
+      node.not
     );
   }
 

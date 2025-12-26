@@ -1,5 +1,6 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
@@ -224,6 +225,21 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     }
     node.left.accept(this);
     node.right.accept(this);
+  }
+
+  visitBetweenExpression(node: BetweenExpression): void {
+    if (!node.operand) {
+      throw new Error('BetweenExpression must have a valid operand');
+    }
+    if (!node.low) {
+      throw new Error('BetweenExpression must have a valid low bound');
+    }
+    if (!node.high) {
+      throw new Error('BetweenExpression must have a valid high bound');
+    }
+    node.operand.accept(this);
+    node.low.accept(this);
+    node.high.accept(this);
   }
 
   visitUnaryExpression(node: UnaryExpression): void {
