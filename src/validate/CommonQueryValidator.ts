@@ -83,6 +83,34 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
       node['_values'].forEach(val => val.accept(this));
     }
     node['_columns'].forEach(col => this.validateIdentifier(col, 'InsertQuery column'));
+    // Validate ON CONFLICT clause
+    if (node['_onConflictColumns'].length > 0) {
+      // Cannot use both OR REPLACE and ON CONFLICT
+      if (node['_orReplace']) {
+        throw new Error('InsertQuery cannot use both OR REPLACE and ON CONFLICT');
+      }
+      // Must have either DO UPDATE or DO NOTHING
+      if (!node['_doNothing'] && node['_doUpdateSets'].length === 0) {
+        throw new Error('ON CONFLICT must specify either DO UPDATE or DO NOTHING');
+      }
+      // Cannot have both DO UPDATE and DO NOTHING
+      if (node['_doNothing'] && node['_doUpdateSets'].length > 0) {
+        throw new Error('ON CONFLICT cannot have both DO UPDATE and DO NOTHING');
+      }
+      node['_onConflictColumns'].forEach(col => this.validateIdentifier(col, 'ON CONFLICT column'));
+      node['_doUpdateSets'].forEach(s => {
+        this.validateIdentifier(s.column, 'DO UPDATE column');
+        s.value.accept(this);
+      });
+      if (node['_onConflictWhere']) {
+        node['_onConflictWhere'].accept(this);
+      }
+    } else {
+      // If no conflict columns but has DO UPDATE or DO NOTHING, that's an error
+      if (node['_doNothing'] || node['_doUpdateSets'].length > 0) {
+        throw new Error('DO UPDATE or DO NOTHING requires ON CONFLICT columns');
+      }
+    }
     node['_returning'].forEach(r => r.accept(this));
   }
 

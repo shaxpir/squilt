@@ -38,6 +38,11 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
     } else {
       node['_values'].forEach(v => v.accept(this));
     }
+    // Collect params from ON CONFLICT clause
+    node['_doUpdateSets'].forEach(s => s.value.accept(this));
+    if (node['_onConflictWhere']) {
+      node['_onConflictWhere'].accept(this);
+    }
     node['_returning'].forEach(r => r.accept(this));
     return this.params;
   }

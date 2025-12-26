@@ -44,6 +44,23 @@ export class CompactQueryRenderer
     } else {
       parts.push(`VALUES (${node['_values'].map(v => v.accept(this)).join(', ')})`);
     }
+    // ON CONFLICT clause
+    if (node['_onConflictColumns'].length > 0) {
+      const conflictCols = node['_onConflictColumns'].map(quoteIdentifier).join(', ');
+      if (node['_doNothing']) {
+        parts.push(`ON CONFLICT (${conflictCols}) DO NOTHING`);
+      } else if (node['_doUpdateSets'].length > 0) {
+        const setClauses = node['_doUpdateSets'].map(s =>
+          `${quoteIdentifier(s.column)} = ${s.value.accept(this)}`
+        ).join(', ');
+        let onConflict = `ON CONFLICT (${conflictCols})`;
+        if (node['_onConflictWhere']) {
+          onConflict += ` WHERE ${node['_onConflictWhere'].accept(this)}`;
+        }
+        onConflict += ` DO UPDATE SET ${setClauses}`;
+        parts.push(onConflict);
+      }
+    }
     if (node['_returning'].length > 0) {
       parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }

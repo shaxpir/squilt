@@ -11,7 +11,7 @@ import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/Fr
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { FunctionName } from "../ast/FunctionName";
 import { InExpression } from "../ast/InExpression";
-import { InsertQuery } from "../ast/InsertQuery";
+import { InsertQuery, UpsertSetClause } from "../ast/InsertQuery";
 import { UpdateQuery, SetClause } from "../ast/UpdateQuery";
 import { Join, JoinType } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
@@ -88,6 +88,16 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
       newQuery['_fromSelect'] = this.expectSingle(node['_fromSelect'].accept(this), 'fromSelect') as SelectQuery;
     } else {
       newQuery['_values'] = this.flatList(node['_values'].map(v => v.accept(this))) as Expression[];
+    }
+    // Transform ON CONFLICT clause
+    newQuery['_onConflictColumns'] = [...node['_onConflictColumns']];
+    newQuery['_doNothing'] = node['_doNothing'];
+    newQuery['_doUpdateSets'] = node['_doUpdateSets'].map(s => ({
+      column: s.column,
+      value: this.expectSingle(s.value.accept(this), 'DO UPDATE value') as Expression
+    })) as UpsertSetClause[];
+    if (node['_onConflictWhere']) {
+      newQuery['_onConflictWhere'] = this.expectSingle(node['_onConflictWhere'].accept(this), 'ON CONFLICT WHERE') as Expression;
     }
     newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
     return newQuery;

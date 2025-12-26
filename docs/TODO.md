@@ -6,7 +6,7 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 
 | Feature | Category | Complexity | Status |
 |---------|----------|------------|--------|
-| UPSERT (ON CONFLICT) | DML | Medium | Planned |
+| UPSERT (ON CONFLICT) | DML | Medium | ✅ Done |
 | CREATE TABLE | DDL | High | Planned |
 | Window Functions | DML | High | Planned |
 | INSERT ... SELECT | DML | Low | ✅ Done |
@@ -426,6 +426,7 @@ interface UsersRow {
 - [x] UPDATE queries with SET clauses and WHERE conditions
 - [x] RETURNING clause for INSERT, UPDATE, DELETE (SQLite 3.35+)
 - [x] INSERT ... SELECT for bulk inserts from query results
+- [x] UPSERT (ON CONFLICT) with DO UPDATE and DO NOTHING (SQLite 3.24+)
 - [x] INTERSECT and EXCEPT set operations
 - [x] BETWEEN and NOT BETWEEN operators for range queries
 - [x] Comprehensive expression system (binary, unary, functions, literals)

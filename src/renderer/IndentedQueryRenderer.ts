@@ -68,6 +68,23 @@ export class IndentedQueryRenderer
       parts.push(`${this.getIndent()}VALUES`);
       parts.push(`${this.getIndent()}(${node['_values'].map(v => v.accept(this)).join(', ')})`);
     }
+    // ON CONFLICT clause
+    if (node['_onConflictColumns'].length > 0) {
+      const conflictCols = node['_onConflictColumns'].map(quoteIdentifier).join(', ');
+      if (node['_doNothing']) {
+        parts.push(`${this.getIndent()}ON CONFLICT (${conflictCols}) DO NOTHING`);
+      } else if (node['_doUpdateSets'].length > 0) {
+        let onConflictLine = `${this.getIndent()}ON CONFLICT (${conflictCols})`;
+        if (node['_onConflictWhere']) {
+          onConflictLine += ` WHERE ${node['_onConflictWhere'].accept(this)}`;
+        }
+        parts.push(onConflictLine);
+        const setClauses = node['_doUpdateSets'].map(s =>
+          `${quoteIdentifier(s.column)} = ${s.value.accept(this)}`
+        ).join(', ');
+        parts.push(`${this.getIndent()}DO UPDATE SET ${setClauses}`);
+      }
+    }
     if (node['_returning'].length > 0) {
       parts.push(`${this.getIndent()}RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }

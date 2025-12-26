@@ -250,6 +250,56 @@ const complexSet = SELECT(FROM('set_a'), COLUMN('id'))
   .except(SELECT(FROM('set_d'), COLUMN('id')));
 ```
 
+### UPSERT (ON CONFLICT) (SQLite 3.24+)
+
+Insert-or-update operations using SQLite's upsert syntax:
+
+```typescript
+import { INSERT, PARAM, COLUMN, EQ } from '@shaxpir/squilt';
+
+// ON CONFLICT DO UPDATE - update existing rows on conflict
+const upsertUser = INSERT('users', ['id', 'name', 'email'], [PARAM('id'), PARAM('name'), PARAM('email')])
+  .onConflict('id')
+  .doUpdate({ name: PARAM('name'), email: PARAM('email') });
+console.log(upsertUser.toSQL());
+// INSERT INTO users (id, name, email) VALUES (?, ?, ?)
+// ON CONFLICT (id) DO UPDATE SET name = ?, email = ?
+
+// ON CONFLICT DO NOTHING - silently ignore conflicts
+const insertIfNotExists = INSERT('events', ['id', 'data'], [PARAM('id'), PARAM('data')])
+  .onConflict('id')
+  .doNothing();
+console.log(insertIfNotExists.toSQL());
+// INSERT INTO events (id, data) VALUES (?, ?) ON CONFLICT (id) DO NOTHING
+
+// Multiple conflict columns
+const upsertRole = INSERT('user_roles', ['user_id', 'role_id', 'assigned_at'], [PARAM('userId'), PARAM('roleId'), PARAM('now')])
+  .onConflict('user_id', 'role_id')
+  .doUpdate({ assigned_at: PARAM('now') });
+console.log(upsertRole.toSQL());
+// INSERT INTO user_roles (user_id, role_id, assigned_at) VALUES (?, ?, ?)
+// ON CONFLICT (user_id, role_id) DO UPDATE SET assigned_at = ?
+
+// With WHERE clause on conflict (conditional upsert)
+const conditionalUpsert = INSERT('users', ['id', 'name'], [PARAM('id'), PARAM('name')])
+  .onConflict('id')
+  .onConflictWhere(EQ(COLUMN('active'), true))
+  .doUpdate({ name: PARAM('name') });
+console.log(conditionalUpsert.toSQL());
+// INSERT INTO users (id, name) VALUES (?, ?)
+// ON CONFLICT (id) WHERE (active = 1) DO UPDATE SET name = ?
+
+// With RETURNING clause
+const upsertWithReturn = INSERT('counters', ['counter_key', 'value'], [PARAM('key'), PARAM('value')])
+  .onConflict('counter_key')
+  .doUpdate({ value: PARAM('value') })
+  .returning(COLUMN('counter_key'), COLUMN('value'));
+console.log(upsertWithReturn.toSQL());
+// INSERT INTO counters (counter_key, value) VALUES (?, ?)
+// ON CONFLICT (counter_key) DO UPDATE SET value = ?
+// RETURNING counter_key, value
+```
+
 ### Range Queries with BETWEEN
 
 Use BETWEEN for range comparisons:
