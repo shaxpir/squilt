@@ -62,8 +62,12 @@ export class IndentedQueryRenderer
     if (node['_columns'].length > 0) {
       parts.push(`${this.getIndent()}(${node['_columns'].map(quoteIdentifier).join(', ')})`);
     }
-    parts.push(`${this.getIndent()}VALUES`);
-    parts.push(`${this.getIndent()}(${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    if (node['_fromSelect']) {
+      parts.push(node['_fromSelect'].accept(this));
+    } else {
+      parts.push(`${this.getIndent()}VALUES`);
+      parts.push(`${this.getIndent()}(${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    }
     if (node['_returning'].length > 0) {
       parts.push(`${this.getIndent()}RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }

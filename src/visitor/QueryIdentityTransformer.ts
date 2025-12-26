@@ -82,7 +82,11 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     const newQuery = new InsertQuery(node['_tableName']);
     newQuery['_orReplace'] = node['_orReplace'];
     newQuery['_columns'] = [...node['_columns']]; // Strings, reuse
-    newQuery['_values'] = this.flatList(node['_values'].map(v => v.accept(this))) as Expression[];
+    if (node['_fromSelect']) {
+      newQuery['_fromSelect'] = this.expectSingle(node['_fromSelect'].accept(this), 'fromSelect') as SelectQuery;
+    } else {
+      newQuery['_values'] = this.flatList(node['_values'].map(v => v.accept(this))) as Expression[];
+    }
     newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
     return newQuery;
   }

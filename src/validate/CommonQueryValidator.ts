@@ -69,11 +69,20 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     if (node['_columns'].length === 0) {
       throw new Error('InsertQuery must specify at least one column');
     }
-    if (node['_columns'].length !== node['_values'].length) {
-      throw new Error('InsertQuery must have the same number of columns and values');
+    if (node['_fromSelect']) {
+      // INSERT ... SELECT - validate the subquery
+      if (node['_values'].length > 0) {
+        throw new Error('InsertQuery cannot have both VALUES and SELECT');
+      }
+      node['_fromSelect'].accept(this);
+    } else {
+      // INSERT ... VALUES - validate column/value count match
+      if (node['_columns'].length !== node['_values'].length) {
+        throw new Error('InsertQuery must have the same number of columns and values');
+      }
+      node['_values'].forEach(val => val.accept(this));
     }
     node['_columns'].forEach(col => this.validateIdentifier(col, 'InsertQuery column'));
-    node['_values'].forEach(val => val.accept(this));
     node['_returning'].forEach(r => r.accept(this));
   }
 

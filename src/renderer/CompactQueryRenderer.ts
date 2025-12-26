@@ -39,7 +39,11 @@ export class CompactQueryRenderer
     if (node['_columns'].length > 0) {
       parts.push(`(${node['_columns'].map(quoteIdentifier).join(', ')})`);
     }
-    parts.push(`VALUES (${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    if (node['_fromSelect']) {
+      parts.push(node['_fromSelect'].accept(this));
+    } else {
+      parts.push(`VALUES (${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    }
     if (node['_returning'].length > 0) {
       parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }

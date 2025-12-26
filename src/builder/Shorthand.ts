@@ -261,6 +261,10 @@ export function INSERT(tableName: string, columns: string[], values: LazyExpress
     .values(...values.map(LAZY));
 }
 
+export function INSERT_INTO(tableName: string): InsertQuery {
+  return QueryBuilder.insertInto(tableName);
+}
+
 export function INSERT_OR_REPLACE(database: string, table: string, columns: string[], values: LazyExpression[]): InsertQuery;
 export function INSERT_OR_REPLACE(tableName: string, columns: string[], values: LazyExpression[]): InsertQuery;
 export function INSERT_OR_REPLACE(arg1: string, arg2: string | string[], arg3?: string[] | LazyExpression[], arg4?: LazyExpression[]): InsertQuery {

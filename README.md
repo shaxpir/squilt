@@ -181,6 +181,43 @@ console.log(insertWithAlias.toSQL());
 // INSERT INTO orders (total) VALUES (?) RETURNING id, DATETIME(created_at) AS order_time
 ```
 
+### INSERT ... SELECT
+
+Insert rows from a query result:
+
+```typescript
+import { INSERT_INTO, SELECT, FROM, COLUMN, EQ, LT, PARAM } from '@shaxpir/squilt';
+
+// Basic INSERT ... SELECT
+const archiveOrders = INSERT_INTO('archive_orders')
+  .columns('id', 'user_id', 'total')
+  .fromSelect(
+    SELECT(FROM('orders'), COLUMN('id'), COLUMN('user_id'), COLUMN('total'))
+      .where(LT(COLUMN('created_at'), PARAM('cutoff')))
+  );
+console.log(archiveOrders.toSQL());
+// INSERT INTO archive_orders (id, user_id, total)
+// SELECT id, user_id, total FROM orders WHERE (created_at < ?)
+
+// INSERT OR REPLACE ... SELECT
+const syncData = INSERT_INTO('local_cache')
+  .orReplace()
+  .columns('id', 'data')
+  .fromSelect(
+    SELECT(FROM('remote_data'), COLUMN('id'), COLUMN('data'))
+  );
+console.log(syncData.toSQL());
+// INSERT OR REPLACE INTO local_cache (id, data) SELECT id, data FROM remote_data
+
+// With RETURNING clause
+const copyWithIds = INSERT_INTO('new_table')
+  .columns('name', 'value')
+  .fromSelect(SELECT(FROM('old_table'), COLUMN('name'), COLUMN('value')))
+  .returning(COLUMN('id'));
+console.log(copyWithIds.toSQL());
+// INSERT INTO new_table (name, value) SELECT name, value FROM old_table RETURNING id
+```
+
 ### Range Queries with BETWEEN
 
 Use BETWEEN for range comparisons:
@@ -252,7 +289,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `FN(name, ...args)` | Function calls |
 | `CASE([...cases])` | CASE expressions |
 | `WITH(name, query)` | Common Table Expressions |
-| `INSERT`, `INSERT_OR_REPLACE` | Insert statements |
+| `INSERT`, `INSERT_INTO`, `INSERT_OR_REPLACE` | Insert statements |
 | `UPDATE(table)` | Update statements |
 | `DELETE_FROM(table)` | Delete statements |
 
