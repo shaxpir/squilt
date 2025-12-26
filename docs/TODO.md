@@ -7,14 +7,15 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 | Feature | Category | Complexity | Status |
 |---------|----------|------------|--------|
 | UPSERT (ON CONFLICT) | DML | Medium | ✅ Done |
-| CREATE TABLE | DDL | High | Planned |
+| CREATE TABLE | DDL | High | ✅ Done |
 | Window Functions | DML | High | Planned |
 | INSERT ... SELECT | DML | Low | ✅ Done |
 | RETURNING Clause | DML | Low | ✅ Done |
 | DROP TABLE | DDL | Low | ✅ Done |
 | DROP INDEX | DDL | Low | ✅ Done |
-| ALTER TABLE | DDL | Medium | Planned |
-| CREATE INDEX | DDL | Medium | Planned |
+| ALTER TABLE | DDL | Medium | ✅ Done |
+| CREATE INDEX | DDL | Medium | ✅ Done |
+| CREATE VIEW / DROP VIEW | DDL | Low | ✅ Done |
 | Full-Text Search | DDL/DML | High | Planned |
 
 ---
@@ -429,6 +430,11 @@ interface UsersRow {
 - [x] INSERT ... SELECT for bulk inserts from query results
 - [x] UPSERT (ON CONFLICT) with DO UPDATE and DO NOTHING (SQLite 3.24+)
 - [x] DROP TABLE and DROP INDEX with IF EXISTS
+- [x] CREATE TABLE with column constraints, table constraints, and SQLite options
+- [x] CREATE INDEX with UNIQUE, partial indexes (WHERE clause), and IF NOT EXISTS
+- [x] CREATE VIEW with column names, TEMPORARY, and IF NOT EXISTS
+- [x] ALTER TABLE with ADD COLUMN, RENAME COLUMN, DROP COLUMN, and RENAME TO
+- [x] DROP VIEW with IF EXISTS
 - [x] INTERSECT and EXCEPT set operations
 - [x] BETWEEN and NOT BETWEEN operators for range queries
 - [x] Comprehensive expression system (binary, unary, functions, literals)

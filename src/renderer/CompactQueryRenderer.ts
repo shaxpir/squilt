@@ -1,13 +1,19 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
+import { CastExpression } from "../ast/CastExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery, ColumnDefinition, TableConstraint } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -22,7 +28,7 @@ import { SelectQuery } from "../ast/SelectQuery";
 import { UnaryExpression } from "../ast/UnaryExpression";
 import { With } from "../ast/With";
 import { ColumnLikeVisitorAcceptor, FromLikeAndJoinVisitorAcceptor, SqlTreeNodeVisitor } from "../visitor/SqlTreeNodeVisitor";
-import { QueryRenderer, quoteIdentifier } from "./QueryRenderer";
+import { QueryRenderer, RenderableQuery, quoteIdentifier } from "./QueryRenderer";
 
 export class CompactQueryRenderer
   implements QueryRenderer, SqlTreeNodeVisitor<string>
@@ -30,7 +36,7 @@ export class CompactQueryRenderer
   protected fromLikeAndJoinAcceptor = new FromLikeAndJoinVisitorAcceptor<void>();
   protected columnLikeAcceptor = new ColumnLikeVisitorAcceptor<string>();
 
-  public render(node: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): string {
+  public render(node: RenderableQuery): string {
     return node.accept(this);
   }
 
@@ -108,6 +114,187 @@ export class CompactQueryRenderer
   visitDropIndexQuery(node: DropIndexQuery): string {
     const ifExists = node.hasIfExists ? ' IF EXISTS' : '';
     return `DROP INDEX${ifExists} ${quoteIdentifier(node.indexName)}`;
+  }
+
+  visitDropViewQuery(node: DropViewQuery): string {
+    const ifExists = node.hasIfExists ? ' IF EXISTS' : '';
+    return `DROP VIEW${ifExists} ${quoteIdentifier(node.viewName)}`;
+  }
+
+  visitCreateViewQuery(node: CreateViewQuery): string {
+    const parts: string[] = [];
+
+    parts.push('CREATE');
+    if (node.isTemporary) {
+      parts.push('TEMPORARY');
+    }
+    parts.push('VIEW');
+    if (node.hasIfNotExists) {
+      parts.push('IF NOT EXISTS');
+    }
+    parts.push(quoteIdentifier(node.viewName));
+
+    if (node.columns.length > 0) {
+      parts.push(`(${node.columns.map(quoteIdentifier).join(', ')})`);
+    }
+
+    parts.push('AS');
+
+    if (!node.selectQuery) {
+      throw new Error('CreateViewQuery must have a SELECT query');
+    }
+    parts.push(node.selectQuery.accept(this));
+
+    return parts.join(' ');
+  }
+
+  visitCreateIndexQuery(node: CreateIndexQuery): string {
+    const parts: string[] = [];
+    const unique = node.isUnique ? 'UNIQUE ' : '';
+    const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
+
+    parts.push(`CREATE ${unique}INDEX${ifNotExists} ${quoteIdentifier(node.indexName)}`);
+    parts.push(`ON ${quoteIdentifier(node.tableName)} (${node.columns.map(quoteIdentifier).join(', ')})`);
+
+    if (node.whereExpression) {
+      parts.push(`WHERE ${node.whereExpression.accept(this)}`);
+    }
+
+    return parts.join(' ');
+  }
+
+  visitAlterTableQuery(node: AlterTableQuery): string {
+    const op = node.operation;
+    if (!op) {
+      throw new Error('AlterTableQuery must have an operation');
+    }
+
+    switch (op.type) {
+      case 'ADD_COLUMN':
+        return `ALTER TABLE ${quoteIdentifier(node.tableName)} ADD COLUMN ${this.renderColumnDefinition(op.column)}`;
+      case 'RENAME_COLUMN':
+        return `ALTER TABLE ${quoteIdentifier(node.tableName)} RENAME COLUMN ${quoteIdentifier(op.oldName)} TO ${quoteIdentifier(op.newName)}`;
+      case 'DROP_COLUMN':
+        return `ALTER TABLE ${quoteIdentifier(node.tableName)} DROP COLUMN ${quoteIdentifier(op.columnName)}`;
+      case 'RENAME_TABLE':
+        return `ALTER TABLE ${quoteIdentifier(node.tableName)} RENAME TO ${quoteIdentifier(op.newTableName)}`;
+    }
+  }
+
+  visitCreateTableQuery(node: CreateTableQuery): string {
+    const parts: string[] = [];
+    const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
+    parts.push(`CREATE TABLE${ifNotExists} ${quoteIdentifier(node.tableName)} (`);
+
+    const definitions: string[] = [];
+
+    // Column definitions
+    for (const col of node.columns) {
+      definitions.push(this.renderColumnDefinition(col));
+    }
+
+    // Table constraints
+    for (const constraint of node.tableConstraints) {
+      definitions.push(this.renderTableConstraint(constraint));
+    }
+
+    parts.push(definitions.join(', '));
+    parts.push(')');
+
+    // Table options
+    const options: string[] = [];
+    if (node.hasWithoutRowid) {
+      options.push('WITHOUT ROWID');
+    }
+    if (node.isStrict) {
+      options.push('STRICT');
+    }
+    if (options.length > 0) {
+      parts.push(' ' + options.join(', '));
+    }
+
+    return parts.join('');
+  }
+
+  protected renderColumnDefinition(col: ColumnDefinition): string {
+    const parts: string[] = [quoteIdentifier(col.name), col.type];
+
+    if (col.constraints.primaryKey) {
+      parts.push('PRIMARY KEY');
+      if (col.constraints.autoIncrement) {
+        parts.push('AUTOINCREMENT');
+      }
+    }
+    if (col.constraints.notNull) {
+      parts.push('NOT NULL');
+    }
+    if (col.constraints.unique) {
+      parts.push('UNIQUE');
+    }
+    if (col.constraints.default !== undefined) {
+      if (col.constraints.default === null) {
+        parts.push('DEFAULT NULL');
+      } else if (typeof col.constraints.default === 'string') {
+        // Check if it's a SQL keyword/function like CURRENT_TIMESTAMP
+        const sqlKeywords = ['CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME', 'TRUE', 'FALSE'];
+        if (sqlKeywords.includes(col.constraints.default.toUpperCase())) {
+          parts.push(`DEFAULT ${col.constraints.default}`);
+        } else {
+          parts.push(`DEFAULT '${col.constraints.default.replace(/'/g, "''")}'`);
+        }
+      } else {
+        parts.push(`DEFAULT ${col.constraints.default}`);
+      }
+    }
+    if (col.constraints.check) {
+      parts.push(`CHECK ${col.constraints.check.accept(this)}`);
+    }
+    if (col.constraints.references) {
+      const ref = col.constraints.references;
+      let refStr = `REFERENCES ${quoteIdentifier(ref.table)}(${quoteIdentifier(ref.column)})`;
+      if (ref.onDelete) {
+        refStr += ` ON DELETE ${ref.onDelete}`;
+      }
+      if (ref.onUpdate) {
+        refStr += ` ON UPDATE ${ref.onUpdate}`;
+      }
+      parts.push(refStr);
+    }
+
+    return parts.join(' ');
+  }
+
+  protected renderTableConstraint(constraint: TableConstraint): string {
+    const parts: string[] = [];
+
+    if (constraint.name) {
+      parts.push(`CONSTRAINT ${quoteIdentifier(constraint.name)}`);
+    }
+
+    switch (constraint.type) {
+      case 'PRIMARY KEY':
+        parts.push(`PRIMARY KEY (${constraint.columns!.map(quoteIdentifier).join(', ')})`);
+        break;
+      case 'UNIQUE':
+        parts.push(`UNIQUE (${constraint.columns!.map(quoteIdentifier).join(', ')})`);
+        break;
+      case 'FOREIGN KEY':
+        const ref = constraint.references!;
+        let fkStr = `FOREIGN KEY (${constraint.columns!.map(quoteIdentifier).join(', ')}) REFERENCES ${quoteIdentifier(ref.table)}(${quoteIdentifier(ref.column)})`;
+        if (ref.onDelete) {
+          fkStr += ` ON DELETE ${ref.onDelete}`;
+        }
+        if (ref.onUpdate) {
+          fkStr += ` ON UPDATE ${ref.onUpdate}`;
+        }
+        parts.push(fkStr);
+        break;
+      case 'CHECK':
+        parts.push(`CHECK ${constraint.check!.accept(this)}`);
+        break;
+    }
+
+    return parts.join(' ');
   }
 
   visitSelectQuery(node: SelectQuery): string {
@@ -269,6 +456,10 @@ export class CompactQueryRenderer
     }
     parts.push('END');
     return parts.join(' ');
+  }
+
+  visitCastExpression(node: CastExpression): string {
+    return `CAST(${node.expression.accept(this)} AS ${node.targetType})`;
   }
 
   visitFunctionExpression(node: FunctionExpression): string {

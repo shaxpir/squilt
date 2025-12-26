@@ -1,13 +1,19 @@
 import { Aliasable, AliasableExpression, Expression, SqlTreeNode } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
+import { CastExpression } from "../ast/CastExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery, ColumnDefinition, TableConstraint } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -142,6 +148,122 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     return newQuery;
   }
 
+  visitDropViewQuery(node: DropViewQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new DropViewQuery(node.viewName);
+    if (node.hasIfExists) {
+      newQuery.ifExists();
+    }
+    return newQuery;
+  }
+
+  visitCreateViewQuery(node: CreateViewQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new CreateViewQuery(node.viewName);
+
+    if (node.columns.length > 0) {
+      newQuery.withColumns(...node.columns);
+    }
+    if (node.isTemporary) {
+      newQuery.temporary();
+    }
+    if (node.hasIfNotExists) {
+      newQuery.ifNotExists();
+    }
+    if (node.selectQuery) {
+      newQuery.as(this.expectSingle(node.selectQuery.accept(this), 'SELECT') as SelectQuery);
+    }
+
+    return newQuery;
+  }
+
+  visitCreateIndexQuery(node: CreateIndexQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new CreateIndexQuery(node.indexName);
+    newQuery.on(node.tableName, [...node.columns]);
+
+    if (node.isUnique) {
+      newQuery.unique();
+    }
+    if (node.hasIfNotExists) {
+      newQuery.ifNotExists();
+    }
+    if (node.whereExpression) {
+      newQuery.where(this.expectSingle(node.whereExpression.accept(this), 'WHERE') as Expression);
+    }
+
+    return newQuery;
+  }
+
+  visitAlterTableQuery(node: AlterTableQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new AlterTableQuery(node.tableName);
+    const op = node.operation;
+
+    if (op) {
+      switch (op.type) {
+        case 'ADD_COLUMN':
+          const newConstraints = { ...op.column.constraints };
+          if (op.column.constraints.check) {
+            newConstraints.check = this.expectSingle(op.column.constraints.check.accept(this), 'check constraint') as Expression;
+          }
+          newQuery.addColumn(op.column.name, op.column.type, newConstraints);
+          break;
+        case 'RENAME_COLUMN':
+          newQuery.renameColumn(op.oldName, op.newName);
+          break;
+        case 'DROP_COLUMN':
+          newQuery.dropColumn(op.columnName);
+          break;
+        case 'RENAME_TABLE':
+          newQuery.renameTo(op.newTableName);
+          break;
+      }
+    }
+
+    return newQuery;
+  }
+
+  visitCreateTableQuery(node: CreateTableQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new CreateTableQuery(node.tableName);
+
+    // Copy columns with transformed check constraints
+    for (const col of node.columns) {
+      const newConstraints = { ...col.constraints };
+      if (col.constraints.check) {
+        newConstraints.check = this.expectSingle(col.constraints.check.accept(this), 'check constraint') as Expression;
+      }
+      newQuery.column(col.name, col.type, newConstraints);
+    }
+
+    // Copy table constraints with transformed check expressions
+    for (const constraint of node.tableConstraints) {
+      switch (constraint.type) {
+        case 'PRIMARY KEY':
+          newQuery.primaryKey(...constraint.columns!);
+          break;
+        case 'UNIQUE':
+          newQuery.unique(...constraint.columns!);
+          break;
+        case 'FOREIGN KEY':
+          newQuery.foreignKey(constraint.columns!, constraint.references!);
+          break;
+        case 'CHECK':
+          const checkExpr = this.expectSingle(constraint.check!.accept(this), 'table check constraint') as Expression;
+          newQuery.check(checkExpr, constraint.name);
+          break;
+      }
+    }
+
+    if (node.hasIfNotExists) {
+      newQuery.ifNotExists();
+    }
+    if (node.hasWithoutRowid) {
+      newQuery.withoutRowid();
+    }
+    if (node.isStrict) {
+      newQuery.strict();
+    }
+
+    return newQuery;
+  }
+
   visitTableFrom(node: TableFrom): SqlTreeNode | SqlTreeNode[] {
     return new TableFrom(node.tableName);
   }
@@ -257,5 +379,12 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
 
   visitExistsExpression(node: ExistsExpression): SqlTreeNode | SqlTreeNode[] {
     return new ExistsExpression(this.expectSingle(node.subquery.accept(this), 'subquery') as SelectQuery);
+  }
+
+  visitCastExpression(node: CastExpression): SqlTreeNode | SqlTreeNode[] {
+    return new CastExpression(
+      this.expectSingle(node.expression.accept(this), 'cast expression') as Expression,
+      node.targetType
+    );
   }
 }

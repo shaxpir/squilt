@@ -1,4 +1,11 @@
+import { AlterTableQuery } from "../ast/AlterTableQuery";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { InsertQuery } from "../ast/InsertQuery";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { SelectQuery } from "../ast/SelectQuery";
@@ -57,8 +64,21 @@ export function quoteIdentifier(identifier: string): string {
   return identifier; // Return unquoted if no quoting is needed
 }
 
+export type RenderableQuery =
+  | SelectQuery
+  | InsertQuery
+  | UpdateQuery
+  | DeleteQuery
+  | CreateTableQuery
+  | CreateIndexQuery
+  | CreateViewQuery
+  | AlterTableQuery
+  | DropTableQuery
+  | DropIndexQuery
+  | DropViewQuery;
+
 export interface QueryRenderer extends SqlTreeNodeVisitor<string> {
-  render(node: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): string;
+  render(node: RenderableQuery): string;
 }
 
 export function shouldQuoteIdentifier(identifier: string): boolean {

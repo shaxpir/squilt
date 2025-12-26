@@ -4,6 +4,7 @@ export { Alias } from './ast/Alias';
 export { BetweenExpression } from './ast/BetweenExpression';
 export { BinaryExpression } from './ast/BinaryExpression';
 export { CaseExpression, CaseItem } from './ast/CaseExpression';
+export { CastExpression } from './ast/CastExpression';
 export { Column, ColumnLike } from './ast/Column';
 export { Concat } from './ast/Concat';
 export { ExistsExpression } from './ast/ExistsExpression';
@@ -14,6 +15,13 @@ export { InExpression } from './ast/InExpression';
 export { InsertQuery } from './ast/InsertQuery';
 export { UpdateQuery, SetClause } from './ast/UpdateQuery';
 export { DeleteQuery } from './ast/DeleteQuery';
+export { CreateTableQuery, ColumnType, ForeignKeyReference, ColumnConstraints, ColumnDefinition, TableConstraint } from './ast/CreateTableQuery';
+export { CreateIndexQuery } from './ast/CreateIndexQuery';
+export { CreateViewQuery } from './ast/CreateViewQuery';
+export { AlterTableQuery, AlterTableOperation } from './ast/AlterTableQuery';
+export { DropTableQuery } from './ast/DropTableQuery';
+export { DropIndexQuery } from './ast/DropIndexQuery';
+export { DropViewQuery } from './ast/DropViewQuery';
 export { Join, JoinType } from './ast/Join';
 export { LiteralExpression, NumberLiteral, StringLiteral, NullLiteral, Param } from './ast/Literals';
 export { Operator } from './ast/Operator';
@@ -53,12 +61,21 @@ export {
   DELETE_FROM,
   // Update queries
   UPDATE,
+  // Create/Drop queries
+  CREATE_TABLE,
+  CREATE_INDEX,
+  CREATE_VIEW,
+  DROP_TABLE,
+  DROP_INDEX,
+  DROP_VIEW,
   // IN expressions
   IN, NOT_IN,
   // Clauses
   GROUP_BY, HAVING, ORDER_BY,
   // CASE expressions
   CASE,
+  // CAST expressions
+  CAST,
   // WITH clauses
   WITH
 } from './builder/Shorthand';

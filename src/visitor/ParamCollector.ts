@@ -1,13 +1,19 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
+import { CastExpression } from "../ast/CastExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -73,6 +79,51 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitDropIndexQuery(_node: DropIndexQuery): any[] {
     // DROP INDEX has no parameters
+    return this.params;
+  }
+
+  visitDropViewQuery(_node: DropViewQuery): any[] {
+    // DROP VIEW has no parameters
+    return this.params;
+  }
+
+  visitCreateViewQuery(node: CreateViewQuery): any[] {
+    // Collect params from the SELECT query
+    if (node.selectQuery) {
+      node.selectQuery.accept(this);
+    }
+    return this.params;
+  }
+
+  visitCreateIndexQuery(node: CreateIndexQuery): any[] {
+    // Collect params from WHERE expression
+    if (node.whereExpression) {
+      node.whereExpression.accept(this);
+    }
+    return this.params;
+  }
+
+  visitAlterTableQuery(node: AlterTableQuery): any[] {
+    // Collect params from ADD COLUMN CHECK constraint
+    const op = node.operation;
+    if (op && op.type === 'ADD_COLUMN' && op.column.constraints.check) {
+      op.column.constraints.check.accept(this);
+    }
+    return this.params;
+  }
+
+  visitCreateTableQuery(node: CreateTableQuery): any[] {
+    // Collect params from CHECK constraints
+    for (const col of node.columns) {
+      if (col.constraints.check) {
+        col.constraints.check.accept(this);
+      }
+    }
+    for (const constraint of node.tableConstraints) {
+      if (constraint.check) {
+        constraint.check.accept(this);
+      }
+    }
     return this.params;
   }
 
@@ -210,6 +261,11 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitExistsExpression(node: ExistsExpression): any[] {
     node.subquery.accept(this);
+    return this.params;
+  }
+
+  visitCastExpression(node: CastExpression): any[] {
+    node.expression.accept(this);
     return this.params;
   }
 }

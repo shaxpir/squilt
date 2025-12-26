@@ -3,11 +3,17 @@ import { Alias } from "../ast/Alias";
 import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
+import { CastExpression } from "../ast/CastExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { AlterTableQuery } from "../ast/AlterTableQuery";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
@@ -415,6 +421,24 @@ export function UPDATE(tableName: string): UpdateQuery {
   return QueryBuilder.update(tableName);
 }
 
+// --- Create Table Queries ---
+
+export function CREATE_TABLE(tableName: string): CreateTableQuery {
+  return QueryBuilder.createTable(tableName);
+}
+
+// --- Create Index Queries ---
+
+export function CREATE_INDEX(indexName: string): CreateIndexQuery {
+  return QueryBuilder.createIndex(indexName);
+}
+
+// --- Alter Table Queries ---
+
+export function ALTER_TABLE(tableName: string): AlterTableQuery {
+  return QueryBuilder.alterTable(tableName);
+}
+
 // --- Drop Queries ---
 
 export function DROP_TABLE(tableName: string): DropTableQuery {
@@ -423,6 +447,16 @@ export function DROP_TABLE(tableName: string): DropTableQuery {
 
 export function DROP_INDEX(indexName: string): DropIndexQuery {
   return QueryBuilder.dropIndex(indexName);
+}
+
+// --- View Queries ---
+
+export function CREATE_VIEW(viewName: string): CreateViewQuery {
+  return QueryBuilder.createView(viewName);
+}
+
+export function DROP_VIEW(viewName: string): DropViewQuery {
+  return QueryBuilder.dropView(viewName);
 }
 
 // --- Aliases ---
@@ -434,6 +468,12 @@ export function ALIAS(referent: AliasableExpression | From, alias: string): Alia
     return new Alias<From>(referent, alias);
   }
   return new Alias<AliasableExpression>(referent as AliasableExpression, alias);
+}
+
+// --- CAST Expressions ---
+
+export function CAST(expr: LazyExpression, targetType: string): CastExpression {
+  return new CastExpression(LAZY(expr), targetType);
 }
 
 // --- Literal Conversion ---

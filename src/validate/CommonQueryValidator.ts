@@ -1,13 +1,19 @@
 import { AliasableExpression } from "../ast/Abstractions";
 import { Alias } from "../ast/Alias";
+import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
+import { CastExpression } from "../ast/CastExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -38,7 +44,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
   private columnCount: number | null = null;
   private isGrouped: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery | DropTableQuery | DropIndexQuery): void {
+  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery | CreateTableQuery | CreateIndexQuery | CreateViewQuery | AlterTableQuery | DropTableQuery | DropIndexQuery | DropViewQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -145,6 +151,134 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
 
   visitDropIndexQuery(node: DropIndexQuery): void {
     this.validateIdentifier(node.indexName, 'DropIndexQuery');
+  }
+
+  visitDropViewQuery(node: DropViewQuery): void {
+    this.validateIdentifier(node.viewName, 'DropViewQuery');
+  }
+
+  visitCreateViewQuery(node: CreateViewQuery): void {
+    this.validateIdentifier(node.viewName, 'CreateViewQuery view name');
+
+    for (const col of node.columns) {
+      this.validateIdentifier(col, 'CreateViewQuery column name');
+    }
+
+    if (!node.selectQuery) {
+      throw new Error('CreateViewQuery must have a SELECT query');
+    }
+
+    node.selectQuery.accept(this);
+  }
+
+  visitCreateIndexQuery(node: CreateIndexQuery): void {
+    this.validateIdentifier(node.indexName, 'CreateIndexQuery index name');
+    this.validateIdentifier(node.tableName, 'CreateIndexQuery table name');
+
+    if (node.columns.length === 0) {
+      throw new Error('CreateIndexQuery must have at least one column');
+    }
+
+    for (const col of node.columns) {
+      this.validateIdentifier(col, 'CreateIndexQuery column');
+    }
+
+    if (node.whereExpression) {
+      node.whereExpression.accept(this);
+    }
+  }
+
+  visitAlterTableQuery(node: AlterTableQuery): void {
+    this.validateIdentifier(node.tableName, 'AlterTableQuery table name');
+
+    const op = node.operation;
+    if (!op) {
+      throw new Error('AlterTableQuery must have an operation');
+    }
+
+    switch (op.type) {
+      case 'ADD_COLUMN':
+        this.validateIdentifier(op.column.name, 'AlterTableQuery column name');
+        if (op.column.constraints.check) {
+          op.column.constraints.check.accept(this);
+        }
+        if (op.column.constraints.references) {
+          this.validateIdentifier(op.column.constraints.references.table, 'Foreign key reference table');
+          this.validateIdentifier(op.column.constraints.references.column, 'Foreign key reference column');
+        }
+        break;
+      case 'RENAME_COLUMN':
+        this.validateIdentifier(op.oldName, 'AlterTableQuery old column name');
+        this.validateIdentifier(op.newName, 'AlterTableQuery new column name');
+        break;
+      case 'DROP_COLUMN':
+        this.validateIdentifier(op.columnName, 'AlterTableQuery column name');
+        break;
+      case 'RENAME_TABLE':
+        this.validateIdentifier(op.newTableName, 'AlterTableQuery new table name');
+        break;
+    }
+  }
+
+  visitCreateTableQuery(node: CreateTableQuery): void {
+    this.validateIdentifier(node.tableName, 'CreateTableQuery');
+
+    if (node.columns.length === 0) {
+      throw new Error('CreateTableQuery must have at least one column');
+    }
+
+    const columnNames = new Set<string>();
+    for (const col of node.columns) {
+      this.validateIdentifier(col.name, 'Column');
+      if (columnNames.has(col.name.toLowerCase())) {
+        throw new Error(`Duplicate column name '${col.name}' in CreateTableQuery`);
+      }
+      columnNames.add(col.name.toLowerCase());
+
+      // Validate check constraint expression
+      if (col.constraints.check) {
+        col.constraints.check.accept(this);
+      }
+
+      // Validate references table name
+      if (col.constraints.references) {
+        this.validateIdentifier(col.constraints.references.table, 'Foreign key reference table');
+        this.validateIdentifier(col.constraints.references.column, 'Foreign key reference column');
+      }
+
+      // Validate AUTOINCREMENT is only used with INTEGER PRIMARY KEY
+      if (col.constraints.autoIncrement && !col.constraints.primaryKey) {
+        throw new Error('AUTOINCREMENT can only be used with PRIMARY KEY');
+      }
+      if (col.constraints.autoIncrement && col.type !== 'INTEGER') {
+        throw new Error('AUTOINCREMENT can only be used with INTEGER type');
+      }
+    }
+
+    // Validate table constraints
+    for (const constraint of node.tableConstraints) {
+      if (constraint.name) {
+        this.validateIdentifier(constraint.name, 'Constraint name');
+      }
+
+      if (constraint.columns) {
+        for (const colName of constraint.columns) {
+          this.validateIdentifier(colName, 'Constraint column');
+          if (!columnNames.has(colName.toLowerCase())) {
+            throw new Error(`Constraint references unknown column '${colName}'`);
+          }
+        }
+      }
+
+      if (constraint.references) {
+        this.validateIdentifier(constraint.references.table, 'Foreign key reference table');
+        this.validateIdentifier(constraint.references.column, 'Foreign key reference column');
+      }
+
+      if (constraint.check) {
+        constraint.check.accept(this);
+      }
+    }
   }
 
   visitSelectQuery(node: SelectQuery): void {
@@ -374,6 +508,10 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     if (node.else) {
       node.else.accept(this);
     }
+  }
+
+  visitCastExpression(node: CastExpression): void {
+    node.expression.accept(this);
   }
 
   visitFunctionExpression(node: FunctionExpression): void {

@@ -1,4 +1,11 @@
+import { AlterTableQuery } from "../ast/AlterTableQuery";
+import { CreateIndexQuery } from "../ast/CreateIndexQuery";
+import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropViewQuery } from "../ast/DropViewQuery";
 import { JsonEachFrom, TableFrom } from "../ast/From";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -13,6 +20,19 @@ import { With } from "../ast/With";
 import { SqlTreeNodeVisitor } from "../visitor/SqlTreeNodeVisitor";
 import { CommonQueryValidator } from "./CommonQueryValidator";
 import { QueryValidator } from "./QueryValidator";
+
+type ValidatableQuery =
+  | SelectQuery
+  | InsertQuery
+  | UpdateQuery
+  | DeleteQuery
+  | CreateTableQuery
+  | CreateIndexQuery
+  | CreateViewQuery
+  | AlterTableQuery
+  | DropTableQuery
+  | DropIndexQuery
+  | DropViewQuery;
 
 export class SQLiteQueryValidator
   extends CommonQueryValidator
@@ -43,7 +63,7 @@ export class SQLiteQueryValidator
 
   private isWithRecursive: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): void {
+  public validate(query: ValidatableQuery): void {
     this.reset();
     query.accept(this);
   }
