@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -25,7 +26,7 @@ export class CompactQueryRenderer
   protected fromLikeAndJoinAcceptor = new FromLikeAndJoinVisitorAcceptor<void>();
   protected columnLikeAcceptor = new ColumnLikeVisitorAcceptor<string>();
 
-  public render(node: SelectQuery | InsertQuery): string {
+  public render(node: SelectQuery | InsertQuery | DeleteQuery): string {
     return node.accept(this);
   }
 
@@ -37,6 +38,16 @@ export class CompactQueryRenderer
       parts.push(`(${node['_columns'].map(quoteIdentifier).join(', ')})`);
     }
     parts.push(`VALUES (${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    return parts.join(' ');
+  }
+
+  visitDeleteQuery(node: DeleteQuery): string {
+    const parts: string[] = [];
+    parts.push('DELETE');
+    parts.push(`FROM ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_where']) {
+      parts.push(`WHERE ${node['_where'].accept(this)}`);
+    }
     return parts.join(' ');
   }
 

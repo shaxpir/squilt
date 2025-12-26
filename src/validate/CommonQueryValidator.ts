@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -33,7 +34,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
   private columnCount: number | null = null;
   private isGrouped: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery): void {
+  public validate(query: SelectQuery | InsertQuery | DeleteQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -71,6 +72,13 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     }
     node['_columns'].forEach(col => this.validateIdentifier(col, 'InsertQuery column'));
     node['_values'].forEach(val => val.accept(this));
+  }
+
+  visitDeleteQuery(node: DeleteQuery): void {
+    this.validateIdentifier(node['_tableName'], 'DeleteQuery');
+    if (node['_where']) {
+      node['_where'].accept(this);
+    }
   }
 
   visitSelectQuery(node: SelectQuery): void {

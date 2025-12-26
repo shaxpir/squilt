@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -19,6 +20,7 @@ import { With } from "../ast/With";
 export interface SqlTreeNodeVisitor<T> {
   visitSelectQuery(node: SelectQuery): T;
   visitInsertQuery(node: InsertQuery): T;
+  visitDeleteQuery(node: DeleteQuery): T;
   visitTableFrom(node: TableFrom): T;
   visitSubqueryFrom(node: SubqueryFrom): T;
   visitJsonEachFrom(node: JsonEachFrom): T;

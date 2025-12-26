@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -35,7 +36,7 @@ export class IndentedQueryRenderer
     this.spacesPerLevel = spacesPerLevel;
   }
 
-  public render(node: SelectQuery | InsertQuery): string {
+  public render(node: SelectQuery | InsertQuery | DeleteQuery): string {
     return node.accept(this);
   }
 
@@ -61,6 +62,18 @@ export class IndentedQueryRenderer
     }
     parts.push(`${this.getIndent()}VALUES`);
     parts.push(`${this.getIndent()}(${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    this.dedent();
+    return parts.join('\n');
+  }
+
+  visitDeleteQuery(node: DeleteQuery): string {
+    this.indent();
+    const parts: string[] = [];
+    parts.push(`${this.getIndent()}DELETE`);
+    parts.push(`${this.getIndent()}FROM ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_where']) {
+      parts.push(`${this.getIndent()}WHERE ${node['_where'].accept(this)}`);
+    }
     this.dedent();
     return parts.join('\n');
   }

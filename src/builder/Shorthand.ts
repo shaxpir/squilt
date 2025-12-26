@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -372,6 +373,12 @@ export function CASE(lazyCases: LazyCaseItem[]): CaseExpression {
 
 export function WITH(name: string, query: SelectQuery): With {
   return new With(name, query);
+}
+
+// --- Delete Queries ---
+
+export function DELETE_FROM(tableName: string): DeleteQuery {
+  return QueryBuilder.deleteFrom(tableName);
 }
 
 // --- Literal Conversion ---

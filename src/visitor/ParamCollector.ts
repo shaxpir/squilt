@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -31,6 +32,13 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitInsertQuery(node: InsertQuery): any[] {
     node['_values'].forEach(v => v.accept(this));
+    return this.params;
+  }
+
+  visitDeleteQuery(node: DeleteQuery): any[] {
+    if (node['_where']) {
+      node['_where'].accept(this);
+    }
     return this.params;
   }
 

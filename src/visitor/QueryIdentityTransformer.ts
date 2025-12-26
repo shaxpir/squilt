@@ -4,6 +4,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -80,6 +81,14 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     newQuery['_orReplace'] = node['_orReplace'];
     newQuery['_columns'] = [...node['_columns']]; // Strings, reuse
     newQuery['_values'] = this.flatList(node['_values'].map(v => v.accept(this))) as Expression[];
+    return newQuery;
+  }
+
+  visitDeleteQuery(node: DeleteQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new DeleteQuery(node['_tableName']);
+    if (node['_where']) {
+      newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
+    }
     return newQuery;
   }
 

@@ -1,3 +1,4 @@
+import { DeleteQuery } from "../ast/DeleteQuery";
 import { JsonEachFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { FunctionName } from "../ast/FunctionName";
@@ -41,7 +42,7 @@ export class SQLiteQueryValidator
 
   private isWithRecursive: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery): void {
+  public validate(query: SelectQuery | InsertQuery | DeleteQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -53,6 +54,11 @@ export class SQLiteQueryValidator
 
   visitInsertQuery(node: InsertQuery): void {
     super.visitInsertQuery(node);
+    // SQLite-specific validation (if any) can be added here
+  }
+
+  visitDeleteQuery(node: DeleteQuery): void {
+    super.visitDeleteQuery(node);
     // SQLite-specific validation (if any) can be added here
   }
 

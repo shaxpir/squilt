@@ -73,6 +73,28 @@ query.toSQL(new IndentedQueryRenderer(2));
 // LIMIT 10
 ```
 
+### Delete Queries
+
+Build DELETE statements with optional WHERE clauses:
+
+```typescript
+import { DELETE_FROM, EQ, COLUMN, PARAM, AND, LT } from '@shaxpir/squilt';
+
+// Simple delete
+const deleteAll = DELETE_FROM('temp_files');
+console.log(deleteAll.toSQL());
+// DELETE FROM temp_files
+
+// Delete with conditions
+const deleteOld = DELETE_FROM('logs')
+  .where(AND(
+    EQ(COLUMN('level'), 'debug'),
+    LT(COLUMN('created_at'), PARAM('cutoffDate'))
+  ));
+console.log(deleteOld.toSQL());
+// DELETE FROM logs WHERE ((level = 'debug') AND (created_at < ?))
+```
+
 ### Parameterized Queries
 
 Use named parameters for safe value binding:
@@ -117,6 +139,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `CASE([...cases])` | CASE expressions |
 | `WITH(name, query)` | Common Table Expressions |
 | `INSERT`, `INSERT_OR_REPLACE` | Insert statements |
+| `DELETE_FROM(table)` | Delete statements |
 
 ### Renderers
 
