@@ -6,6 +6,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
+import { SubqueryExpression } from "../ast/SubqueryExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -517,6 +518,10 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
 
   visitCollateExpression(node: CollateExpression): void {
     node.expression.accept(this);
+  }
+
+  visitSubqueryExpression(node: SubqueryExpression): void {
+    node.subquery.accept(this);
   }
 
   visitFunctionExpression(node: FunctionExpression): void {

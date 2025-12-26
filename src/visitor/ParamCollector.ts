@@ -6,6 +6,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
+import { SubqueryExpression } from "../ast/SubqueryExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -272,6 +273,11 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitCollateExpression(node: CollateExpression): any[] {
     node.expression.accept(this);
+    return this.params;
+  }
+
+  visitSubqueryExpression(node: SubqueryExpression): any[] {
+    node.subquery.accept(this);
     return this.params;
   }
 }

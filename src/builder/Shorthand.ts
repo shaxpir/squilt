@@ -5,6 +5,7 @@ import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
+import { SubqueryExpression } from "../ast/SubqueryExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { AlterTableQuery } from "../ast/AlterTableQuery";
@@ -485,6 +486,12 @@ export function CAST(expr: LazyExpression, targetType: string): CastExpression {
 
 export function COLLATE(expr: LazyExpression, collation: string): CollateExpression {
   return new CollateExpression(LAZY(expr), collation);
+}
+
+// --- Subquery Expressions ---
+
+export function SUBQUERY(query: SelectQuery): SubqueryExpression {
+  return new SubqueryExpression(query);
 }
 
 // --- Literal Conversion ---

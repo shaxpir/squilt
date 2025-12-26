@@ -6,6 +6,7 @@ export { BinaryExpression } from './ast/BinaryExpression';
 export { CaseExpression, CaseItem } from './ast/CaseExpression';
 export { CastExpression } from './ast/CastExpression';
 export { CollateExpression } from './ast/CollateExpression';
+export { SubqueryExpression } from './ast/SubqueryExpression';
 export { Column, ColumnLike } from './ast/Column';
 export { Concat } from './ast/Concat';
 export { ExistsExpression } from './ast/ExistsExpression';
@@ -79,6 +80,8 @@ export {
   CAST,
   // COLLATE expressions
   COLLATE,
+  // Subquery expressions
+  SUBQUERY,
   // WITH clauses
   WITH
 } from './builder/Shorthand';
