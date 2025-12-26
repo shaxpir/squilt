@@ -10,6 +10,7 @@ import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { Join } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { OrderBy } from "../ast/OrderBy";
@@ -34,7 +35,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
   private columnCount: number | null = null;
   private isGrouped: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery | DeleteQuery): void {
+  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -76,6 +77,20 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
 
   visitDeleteQuery(node: DeleteQuery): void {
     this.validateIdentifier(node['_tableName'], 'DeleteQuery');
+    if (node['_where']) {
+      node['_where'].accept(this);
+    }
+  }
+
+  visitUpdateQuery(node: UpdateQuery): void {
+    this.validateIdentifier(node['_tableName'], 'UpdateQuery');
+    if (node['_set'].length === 0) {
+      throw new Error('UpdateQuery must have at least one SET clause');
+    }
+    node['_set'].forEach(s => {
+      this.validateIdentifier(s.column, 'UpdateQuery column');
+      s.value.accept(this);
+    });
     if (node['_where']) {
       node['_where'].accept(this);
     }

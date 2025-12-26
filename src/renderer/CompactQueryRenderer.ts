@@ -10,6 +10,7 @@ import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { Join } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { Operator } from "../ast/Operator";
@@ -26,7 +27,7 @@ export class CompactQueryRenderer
   protected fromLikeAndJoinAcceptor = new FromLikeAndJoinVisitorAcceptor<void>();
   protected columnLikeAcceptor = new ColumnLikeVisitorAcceptor<string>();
 
-  public render(node: SelectQuery | InsertQuery | DeleteQuery): string {
+  public render(node: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): string {
     return node.accept(this);
   }
 
@@ -45,6 +46,21 @@ export class CompactQueryRenderer
     const parts: string[] = [];
     parts.push('DELETE');
     parts.push(`FROM ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_where']) {
+      parts.push(`WHERE ${node['_where'].accept(this)}`);
+    }
+    return parts.join(' ');
+  }
+
+  visitUpdateQuery(node: UpdateQuery): string {
+    const parts: string[] = [];
+    parts.push(`UPDATE ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_set'].length > 0) {
+      const setClauses = node['_set'].map(s =>
+        `${quoteIdentifier(s.column)} = ${s.value.accept(this)}`
+      ).join(', ');
+      parts.push(`SET ${setClauses}`);
+    }
     if (node['_where']) {
       parts.push(`WHERE ${node['_where'].accept(this)}`);
     }

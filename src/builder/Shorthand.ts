@@ -5,6 +5,7 @@ import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -379,6 +380,12 @@ export function WITH(name: string, query: SelectQuery): With {
 
 export function DELETE_FROM(tableName: string): DeleteQuery {
   return QueryBuilder.deleteFrom(tableName);
+}
+
+// --- Update Queries ---
+
+export function UPDATE(tableName: string): UpdateQuery {
+  return QueryBuilder.update(tableName);
 }
 
 // --- Literal Conversion ---

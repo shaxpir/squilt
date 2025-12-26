@@ -11,6 +11,7 @@ export { FunctionExpression } from './ast/FunctionExpression';
 export { FunctionName } from './ast/FunctionName';
 export { InExpression } from './ast/InExpression';
 export { InsertQuery } from './ast/InsertQuery';
+export { UpdateQuery, SetClause } from './ast/UpdateQuery';
 export { DeleteQuery } from './ast/DeleteQuery';
 export { Join, JoinType } from './ast/Join';
 export { LiteralExpression, NumberLiteral, StringLiteral, NullLiteral, Param } from './ast/Literals';
@@ -48,6 +49,8 @@ export {
   INSERT, INSERT_OR_REPLACE,
   // Delete queries
   DELETE_FROM,
+  // Update queries
+  UPDATE,
   // IN expressions
   IN, NOT_IN,
   // Clauses

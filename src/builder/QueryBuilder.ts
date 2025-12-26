@@ -1,5 +1,6 @@
 import { SelectQuery } from "../ast/SelectQuery";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { SqlTreeNode } from "../ast/Abstractions";
 import { QueryIdentityTransformer } from "../visitor/QueryIdentityTransformer";
@@ -12,6 +13,10 @@ export class QueryBuilder {
 
   public static insertInto(tableName: string): InsertQuery {
     return new InsertQuery(tableName);
+  }
+
+  public static update(tableName: string): UpdateQuery {
+    return new UpdateQuery(tableName);
   }
 
   public static deleteFrom(tableName: string): DeleteQuery {

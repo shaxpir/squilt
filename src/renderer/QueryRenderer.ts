@@ -1,5 +1,6 @@
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { SelectQuery } from "../ast/SelectQuery";
 import { SqlTreeNodeVisitor } from "../visitor/SqlTreeNodeVisitor";
 
@@ -57,7 +58,7 @@ export function quoteIdentifier(identifier: string): string {
 }
 
 export interface QueryRenderer extends SqlTreeNodeVisitor<string> {
-  render(node: SelectQuery | InsertQuery | DeleteQuery): string;
+  render(node: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): string;
 }
 
 export function shouldQuoteIdentifier(identifier: string): boolean {

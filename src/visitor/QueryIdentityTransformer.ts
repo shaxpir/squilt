@@ -11,6 +11,7 @@ import { FunctionExpression } from "../ast/FunctionExpression";
 import { FunctionName } from "../ast/FunctionName";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery, SetClause } from "../ast/UpdateQuery";
 import { Join, JoinType } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { Operator } from "../ast/Operator";
@@ -86,6 +87,17 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
 
   visitDeleteQuery(node: DeleteQuery): SqlTreeNode | SqlTreeNode[] {
     const newQuery = new DeleteQuery(node['_tableName']);
+    if (node['_where']) {
+      newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
+    }
+    return newQuery;
+  }
+
+  visitUpdateQuery(node: UpdateQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new UpdateQuery(node['_tableName']);
+    node['_set'].forEach(s => {
+      newQuery.set(s.column, this.expectSingle(s.value.accept(this), 'SET value') as Expression);
+    });
     if (node['_where']) {
       newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
     }

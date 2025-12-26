@@ -10,6 +10,7 @@ import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { Join } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { OrderBy } from "../ast/OrderBy";
@@ -36,6 +37,14 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
   }
 
   visitDeleteQuery(node: DeleteQuery): any[] {
+    if (node['_where']) {
+      node['_where'].accept(this);
+    }
+    return this.params;
+  }
+
+  visitUpdateQuery(node: UpdateQuery): any[] {
+    node['_set'].forEach(s => s.value.accept(this));
     if (node['_where']) {
       node['_where'].accept(this);
     }

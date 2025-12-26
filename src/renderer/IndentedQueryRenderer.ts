@@ -10,6 +10,7 @@ import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { Join } from "../ast/Join";
 import { NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { Operator } from "../ast/Operator";
@@ -36,7 +37,7 @@ export class IndentedQueryRenderer
     this.spacesPerLevel = spacesPerLevel;
   }
 
-  public render(node: SelectQuery | InsertQuery | DeleteQuery): string {
+  public render(node: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): string {
     return node.accept(this);
   }
 
@@ -71,6 +72,23 @@ export class IndentedQueryRenderer
     const parts: string[] = [];
     parts.push(`${this.getIndent()}DELETE`);
     parts.push(`${this.getIndent()}FROM ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_where']) {
+      parts.push(`${this.getIndent()}WHERE ${node['_where'].accept(this)}`);
+    }
+    this.dedent();
+    return parts.join('\n');
+  }
+
+  visitUpdateQuery(node: UpdateQuery): string {
+    this.indent();
+    const parts: string[] = [];
+    parts.push(`${this.getIndent()}UPDATE ${quoteIdentifier(node['_tableName'])}`);
+    if (node['_set'].length > 0) {
+      const setClauses = node['_set'].map(s =>
+        `${quoteIdentifier(s.column)} = ${s.value.accept(this)}`
+      ).join(', ');
+      parts.push(`${this.getIndent()}SET ${setClauses}`);
+    }
     if (node['_where']) {
       parts.push(`${this.getIndent()}WHERE ${node['_where'].accept(this)}`);
     }

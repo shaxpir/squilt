@@ -117,6 +117,32 @@ console.log(deleteOrders.toSQL());
 // DELETE FROM orders WHERE EXISTS (SELECT * FROM refunds WHERE (refunds.order_id = orders.id))
 ```
 
+### Update Queries
+
+Build UPDATE statements with SET clauses and optional WHERE:
+
+```typescript
+import { UPDATE, EQ, COLUMN, PARAM } from '@shaxpir/squilt';
+import { StringLiteral, NumberLiteral } from '@shaxpir/squilt';
+
+// Simple update
+const updateStatus = UPDATE('users')
+  .set('status', new StringLiteral('active'))
+  .set('last_login', PARAM('loginTime'))
+  .where(EQ(COLUMN('id'), PARAM('userId')));
+console.log(updateStatus.toSQL());
+// UPDATE users SET status = 'active', last_login = ? WHERE (id = ?)
+
+// Update multiple columns
+const bulkUpdate = UPDATE('products')
+  .set('price', new NumberLiteral(99))
+  .set('on_sale', new NumberLiteral(1))
+  .set('discount', new NumberLiteral(10))
+  .where(EQ(COLUMN('category'), 'electronics'));
+console.log(bulkUpdate.toSQL());
+// UPDATE products SET price = 99, on_sale = 1, discount = 10 WHERE (category = 'electronics')
+```
+
 ### Parameterized Queries
 
 Use named parameters for safe value binding:
@@ -161,6 +187,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `CASE([...cases])` | CASE expressions |
 | `WITH(name, query)` | Common Table Expressions |
 | `INSERT`, `INSERT_OR_REPLACE` | Insert statements |
+| `UPDATE(table)` | Update statements |
 | `DELETE_FROM(table)` | Delete statements |
 
 ### Renderers

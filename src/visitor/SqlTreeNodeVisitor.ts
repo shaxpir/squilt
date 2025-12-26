@@ -10,6 +10,7 @@ import { FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
 import { InExpression } from "../ast/InExpression";
 import { InsertQuery } from "../ast/InsertQuery";
+import { UpdateQuery } from "../ast/UpdateQuery";
 import { Join } from "../ast/Join";
 import { LiteralExpression, NullLiteral, NumberLiteral, Param, StringLiteral } from "../ast/Literals";
 import { OrderBy } from "../ast/OrderBy";
@@ -21,6 +22,7 @@ export interface SqlTreeNodeVisitor<T> {
   visitSelectQuery(node: SelectQuery): T;
   visitInsertQuery(node: InsertQuery): T;
   visitDeleteQuery(node: DeleteQuery): T;
+  visitUpdateQuery(node: UpdateQuery): T;
   visitTableFrom(node: TableFrom): T;
   visitSubqueryFrom(node: SubqueryFrom): T;
   visitJsonEachFrom(node: JsonEachFrom): T;
