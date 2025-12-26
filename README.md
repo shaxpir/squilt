@@ -95,6 +95,28 @@ console.log(deleteOld.toSQL());
 // DELETE FROM logs WHERE ((level = 'debug') AND (created_at < ?))
 ```
 
+DELETE queries support subqueries in WHERE clauses:
+
+```typescript
+import { DELETE_FROM, SELECT, FROM, COLUMN, IN, EXISTS, EQ } from '@shaxpir/squilt';
+
+// Delete using IN with subquery
+const bannedUsers = SELECT(FROM('banned_users'), COLUMN('id'));
+const deleteComments = DELETE_FROM('comments')
+  .where(IN(COLUMN('user_id'), bannedUsers));
+console.log(deleteComments.toSQL());
+// DELETE FROM comments WHERE (user_id IN (SELECT id FROM banned_users))
+
+// Delete using EXISTS with correlated subquery
+const deleteOrders = DELETE_FROM('orders')
+  .where(EXISTS(
+    SELECT(FROM('refunds'), COLUMN('*'))
+      .where(EQ(COLUMN('refunds', 'order_id'), COLUMN('orders', 'id')))
+  ));
+console.log(deleteOrders.toSQL());
+// DELETE FROM orders WHERE EXISTS (SELECT * FROM refunds WHERE (refunds.order_id = orders.id))
+```
+
 ### Parameterized Queries
 
 Use named parameters for safe value binding:
