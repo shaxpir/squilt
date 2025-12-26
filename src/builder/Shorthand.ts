@@ -78,6 +78,10 @@ export function LIKE(left: LazyExpression, right: LazyExpression): BinaryExpress
   return new BinaryExpression(LAZY(left), Operator.LIKE, LAZY(right));
 }
 
+export function GLOB(left: LazyExpression, right: LazyExpression): BinaryExpression {
+  return new BinaryExpression(LAZY(left), Operator.GLOB, LAZY(right));
+}
+
 export function BETWEEN(operand: LazyExpression, low: LazyExpression, high: LazyExpression): BetweenExpression {
   return new BetweenExpression(LAZY(operand), LAZY(low), LAZY(high), false);
 }

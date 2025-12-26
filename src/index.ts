@@ -36,7 +36,7 @@ export {
   // Value helpers
   VAL,
   // Operators
-  EQ, NOT_EQ, NOT, GT, LT, GTE, LTE, LIKE,
+  EQ, NOT_EQ, NOT, GT, LT, GTE, LTE, LIKE, GLOB,
   BETWEEN, NOT_BETWEEN,
   IS_NULL, IS_NOT_NULL,
   PLUS, MINUS, MULTIPLY, DIVIDE,

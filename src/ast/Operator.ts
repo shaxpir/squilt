@@ -9,6 +9,7 @@ export enum Operator {
   GREATER_THAN_OR_EQUAL = '>=',
   LESS_THAN_OR_EQUAL = '<=',
   LIKE = 'LIKE',
+  GLOB = 'GLOB',
   MINUS = '-',
   PLUS = '+',
   MULTIPLY = '*',
