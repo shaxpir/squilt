@@ -5,6 +5,7 @@ export { BetweenExpression } from './ast/BetweenExpression';
 export { BinaryExpression } from './ast/BinaryExpression';
 export { CaseExpression, CaseItem } from './ast/CaseExpression';
 export { CastExpression } from './ast/CastExpression';
+export { CollateExpression } from './ast/CollateExpression';
 export { Column, ColumnLike } from './ast/Column';
 export { Concat } from './ast/Concat';
 export { ExistsExpression } from './ast/ExistsExpression';
@@ -76,6 +77,8 @@ export {
   CASE,
   // CAST expressions
   CAST,
+  // COLLATE expressions
+  COLLATE,
   // WITH clauses
   WITH
 } from './builder/Shorthand';

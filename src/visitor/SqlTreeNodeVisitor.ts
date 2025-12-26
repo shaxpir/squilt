@@ -5,6 +5,7 @@ import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
+import { CollateExpression } from "../ast/CollateExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -54,6 +55,7 @@ export interface SqlTreeNodeVisitor<T> {
   visitConcat(node: Concat): T;
   visitCaseExpression(node: CaseExpression): T;
   visitCastExpression(node: CastExpression): T;
+  visitCollateExpression(node: CollateExpression): T;
   visitFunctionExpression(node: FunctionExpression): T;
   visitParamExpression(node: Param): T;
   visitStringLiteral(node: StringLiteral): T;

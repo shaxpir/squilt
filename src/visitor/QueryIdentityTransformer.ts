@@ -5,6 +5,7 @@ import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
+import { CollateExpression } from "../ast/CollateExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -385,6 +386,13 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     return new CastExpression(
       this.expectSingle(node.expression.accept(this), 'cast expression') as Expression,
       node.targetType
+    );
+  }
+
+  visitCollateExpression(node: CollateExpression): SqlTreeNode | SqlTreeNode[] {
+    return new CollateExpression(
+      this.expectSingle(node.expression.accept(this), 'collate expression') as Expression,
+      node.collation
     );
   }
 }

@@ -5,6 +5,7 @@ import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
+import { CollateExpression } from "../ast/CollateExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -460,6 +461,10 @@ export class CompactQueryRenderer
 
   visitCastExpression(node: CastExpression): string {
     return `CAST(${node.expression.accept(this)} AS ${node.targetType})`;
+  }
+
+  visitCollateExpression(node: CollateExpression): string {
+    return `${node.expression.accept(this)} COLLATE ${node.collation}`;
   }
 
   visitFunctionExpression(node: FunctionExpression): string {

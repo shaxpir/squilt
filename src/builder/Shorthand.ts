@@ -4,6 +4,7 @@ import { BetweenExpression } from "../ast/BetweenExpression";
 import { BinaryExpression } from "../ast/BinaryExpression";
 import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
+import { CollateExpression } from "../ast/CollateExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { AlterTableQuery } from "../ast/AlterTableQuery";
@@ -478,6 +479,12 @@ export function ALIAS(referent: AliasableExpression | From, alias: string): Alia
 
 export function CAST(expr: LazyExpression, targetType: string): CastExpression {
   return new CastExpression(LAZY(expr), targetType);
+}
+
+// --- COLLATE Expressions ---
+
+export function COLLATE(expr: LazyExpression, collation: string): CollateExpression {
+  return new CollateExpression(LAZY(expr), collation);
 }
 
 // --- Literal Conversion ---
