@@ -6,6 +6,8 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -61,6 +63,16 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
       node['_where'].accept(this);
     }
     node['_returning'].forEach(r => r.accept(this));
+    return this.params;
+  }
+
+  visitDropTableQuery(_node: DropTableQuery): any[] {
+    // DROP TABLE has no parameters
+    return this.params;
+  }
+
+  visitDropIndexQuery(_node: DropIndexQuery): any[] {
+    // DROP INDEX has no parameters
     return this.params;
   }
 

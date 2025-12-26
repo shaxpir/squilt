@@ -6,6 +6,8 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -36,7 +38,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
   private columnCount: number | null = null;
   private isGrouped: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery): void {
+  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery | DropTableQuery | DropIndexQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -135,6 +137,14 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
       node['_where'].accept(this);
     }
     node['_returning'].forEach(r => r.accept(this));
+  }
+
+  visitDropTableQuery(node: DropTableQuery): void {
+    this.validateIdentifier(node.tableName, 'DropTableQuery');
+  }
+
+  visitDropIndexQuery(node: DropIndexQuery): void {
+    this.validateIdentifier(node.indexName, 'DropIndexQuery');
   }
 
   visitSelectQuery(node: SelectQuery): void {

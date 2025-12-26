@@ -6,6 +6,8 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -96,6 +98,16 @@ export class CompactQueryRenderer
       parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }
     return parts.join(' ');
+  }
+
+  visitDropTableQuery(node: DropTableQuery): string {
+    const ifExists = node.hasIfExists ? ' IF EXISTS' : '';
+    return `DROP TABLE${ifExists} ${quoteIdentifier(node.tableName)}`;
+  }
+
+  visitDropIndexQuery(node: DropIndexQuery): string {
+    const ifExists = node.hasIfExists ? ' IF EXISTS' : '';
+    return `DROP INDEX${ifExists} ${quoteIdentifier(node.indexName)}`;
   }
 
   visitSelectQuery(node: SelectQuery): string {

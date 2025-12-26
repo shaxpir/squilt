@@ -2,6 +2,8 @@ import { SelectQuery } from "../ast/SelectQuery";
 import { InsertQuery } from "../ast/InsertQuery";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
 import { SqlTreeNode } from "../ast/Abstractions";
 import { QueryIdentityTransformer } from "../visitor/QueryIdentityTransformer";
 
@@ -21,6 +23,14 @@ export class QueryBuilder {
 
   public static deleteFrom(tableName: string): DeleteQuery {
     return new DeleteQuery(tableName);
+  }
+
+  public static dropTable(tableName: string): DropTableQuery {
+    return new DropTableQuery(tableName);
+  }
+
+  public static dropIndex(indexName: string): DropIndexQuery {
+    return new DropIndexQuery(indexName);
   }
 
   public static clone(node:SqlTreeNode):SqlTreeNode {

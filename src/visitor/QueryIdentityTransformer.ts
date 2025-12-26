@@ -6,6 +6,8 @@ import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -121,6 +123,22 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
       newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
     }
     newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
+    return newQuery;
+  }
+
+  visitDropTableQuery(node: DropTableQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new DropTableQuery(node.tableName);
+    if (node.hasIfExists) {
+      newQuery.ifExists();
+    }
+    return newQuery;
+  }
+
+  visitDropIndexQuery(node: DropIndexQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new DropIndexQuery(node.indexName);
+    if (node.hasIfExists) {
+      newQuery.ifExists();
+    }
     return newQuery;
   }
 

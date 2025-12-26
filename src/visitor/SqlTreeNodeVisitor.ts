@@ -6,6 +6,8 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
 import { FunctionExpression } from "../ast/FunctionExpression";
@@ -24,6 +26,8 @@ export interface SqlTreeNodeVisitor<T> {
   visitInsertQuery(node: InsertQuery): T;
   visitDeleteQuery(node: DeleteQuery): T;
   visitUpdateQuery(node: UpdateQuery): T;
+  visitDropTableQuery(node: DropTableQuery): T;
+  visitDropIndexQuery(node: DropIndexQuery): T;
   visitTableFrom(node: TableFrom): T;
   visitSubqueryFrom(node: SubqueryFrom): T;
   visitJsonEachFrom(node: JsonEachFrom): T;

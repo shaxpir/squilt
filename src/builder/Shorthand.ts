@@ -6,6 +6,8 @@ import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { DeleteQuery } from "../ast/DeleteQuery";
+import { DropIndexQuery } from "../ast/DropIndexQuery";
+import { DropTableQuery } from "../ast/DropTableQuery";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { ExistsExpression } from "../ast/ExistsExpression";
 import { From, FromLike, JsonEachFrom, SubqueryFrom, TableFrom } from "../ast/From";
@@ -411,6 +413,16 @@ export function DELETE_FROM(tableName: string): DeleteQuery {
 
 export function UPDATE(tableName: string): UpdateQuery {
   return QueryBuilder.update(tableName);
+}
+
+// --- Drop Queries ---
+
+export function DROP_TABLE(tableName: string): DropTableQuery {
+  return QueryBuilder.dropTable(tableName);
+}
+
+export function DROP_INDEX(indexName: string): DropIndexQuery {
+  return QueryBuilder.dropIndex(indexName);
 }
 
 // --- Aliases ---

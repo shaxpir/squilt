@@ -300,6 +300,34 @@ console.log(upsertWithReturn.toSQL());
 // RETURNING counter_key, value
 ```
 
+### DROP TABLE and DROP INDEX
+
+Remove tables and indexes from the database:
+
+```typescript
+import { DROP_TABLE, DROP_INDEX } from '@shaxpir/squilt';
+
+// Simple DROP TABLE
+const dropUsers = DROP_TABLE('users');
+console.log(dropUsers.toSQL());
+// DROP TABLE users
+
+// DROP TABLE IF EXISTS
+const dropCache = DROP_TABLE('cache').ifExists();
+console.log(dropCache.toSQL());
+// DROP TABLE IF EXISTS cache
+
+// Simple DROP INDEX
+const dropIndex = DROP_INDEX('idx_users_email');
+console.log(dropIndex.toSQL());
+// DROP INDEX idx_users_email
+
+// DROP INDEX IF EXISTS
+const dropOldIndex = DROP_INDEX('idx_old').ifExists();
+console.log(dropOldIndex.toSQL());
+// DROP INDEX IF EXISTS idx_old
+```
+
 ### Range Queries with BETWEEN
 
 Use BETWEEN for range comparisons:
@@ -375,6 +403,8 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `INSERT`, `INSERT_INTO`, `INSERT_OR_REPLACE` | Insert statements |
 | `UPDATE(table)` | Update statements |
 | `DELETE_FROM(table)` | Delete statements |
+| `DROP_TABLE(table)` | Drop table statements |
+| `DROP_INDEX(index)` | Drop index statements |
 
 ### Renderers
 

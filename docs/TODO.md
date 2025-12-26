@@ -11,7 +11,8 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 | Window Functions | DML | High | Planned |
 | INSERT ... SELECT | DML | Low | ✅ Done |
 | RETURNING Clause | DML | Low | ✅ Done |
-| DROP TABLE | DDL | Low | Planned |
+| DROP TABLE | DDL | Low | ✅ Done |
+| DROP INDEX | DDL | Low | ✅ Done |
 | ALTER TABLE | DDL | Medium | Planned |
 | CREATE INDEX | DDL | Medium | Planned |
 | Full-Text Search | DDL/DML | High | Planned |
@@ -427,6 +428,7 @@ interface UsersRow {
 - [x] RETURNING clause for INSERT, UPDATE, DELETE (SQLite 3.35+)
 - [x] INSERT ... SELECT for bulk inserts from query results
 - [x] UPSERT (ON CONFLICT) with DO UPDATE and DO NOTHING (SQLite 3.24+)
+- [x] DROP TABLE and DROP INDEX with IF EXISTS
 - [x] INTERSECT and EXCEPT set operations
 - [x] BETWEEN and NOT BETWEEN operators for range queries
 - [x] Comprehensive expression system (binary, unary, functions, literals)
