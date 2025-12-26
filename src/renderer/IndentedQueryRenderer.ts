@@ -64,6 +64,9 @@ export class IndentedQueryRenderer
     }
     parts.push(`${this.getIndent()}VALUES`);
     parts.push(`${this.getIndent()}(${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    if (node['_returning'].length > 0) {
+      parts.push(`${this.getIndent()}RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
+    }
     this.dedent();
     return parts.join('\n');
   }
@@ -75,6 +78,9 @@ export class IndentedQueryRenderer
     parts.push(`${this.getIndent()}FROM ${quoteIdentifier(node['_tableName'])}`);
     if (node['_where']) {
       parts.push(`${this.getIndent()}WHERE ${node['_where'].accept(this)}`);
+    }
+    if (node['_returning'].length > 0) {
+      parts.push(`${this.getIndent()}RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }
     this.dedent();
     return parts.join('\n');
@@ -92,6 +98,9 @@ export class IndentedQueryRenderer
     }
     if (node['_where']) {
       parts.push(`${this.getIndent()}WHERE ${node['_where'].accept(this)}`);
+    }
+    if (node['_returning'].length > 0) {
+      parts.push(`${this.getIndent()}RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }
     this.dedent();
     return parts.join('\n');

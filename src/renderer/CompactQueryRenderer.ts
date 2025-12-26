@@ -40,6 +40,9 @@ export class CompactQueryRenderer
       parts.push(`(${node['_columns'].map(quoteIdentifier).join(', ')})`);
     }
     parts.push(`VALUES (${node['_values'].map(v => v.accept(this)).join(', ')})`);
+    if (node['_returning'].length > 0) {
+      parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
+    }
     return parts.join(' ');
   }
 
@@ -49,6 +52,9 @@ export class CompactQueryRenderer
     parts.push(`FROM ${quoteIdentifier(node['_tableName'])}`);
     if (node['_where']) {
       parts.push(`WHERE ${node['_where'].accept(this)}`);
+    }
+    if (node['_returning'].length > 0) {
+      parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }
     return parts.join(' ');
   }
@@ -64,6 +70,9 @@ export class CompactQueryRenderer
     }
     if (node['_where']) {
       parts.push(`WHERE ${node['_where'].accept(this)}`);
+    }
+    if (node['_returning'].length > 0) {
+      parts.push(`RETURNING ${node['_returning'].map(r => r.accept(this)).join(', ')}`);
     }
     return parts.join(' ');
   }

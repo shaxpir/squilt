@@ -74,6 +74,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     }
     node['_columns'].forEach(col => this.validateIdentifier(col, 'InsertQuery column'));
     node['_values'].forEach(val => val.accept(this));
+    node['_returning'].forEach(r => r.accept(this));
   }
 
   visitDeleteQuery(node: DeleteQuery): void {
@@ -81,6 +82,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     if (node['_where']) {
       node['_where'].accept(this);
     }
+    node['_returning'].forEach(r => r.accept(this));
   }
 
   visitUpdateQuery(node: UpdateQuery): void {
@@ -95,6 +97,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     if (node['_where']) {
       node['_where'].accept(this);
     }
+    node['_returning'].forEach(r => r.accept(this));
   }
 
   visitSelectQuery(node: SelectQuery): void {

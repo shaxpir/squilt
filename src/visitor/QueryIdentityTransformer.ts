@@ -83,6 +83,7 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     newQuery['_orReplace'] = node['_orReplace'];
     newQuery['_columns'] = [...node['_columns']]; // Strings, reuse
     newQuery['_values'] = this.flatList(node['_values'].map(v => v.accept(this))) as Expression[];
+    newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
     return newQuery;
   }
 
@@ -91,6 +92,7 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     if (node['_where']) {
       newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
     }
+    newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
     return newQuery;
   }
 
@@ -102,6 +104,7 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     if (node['_where']) {
       newQuery['_where'] = this.expectSingle(node['_where'].accept(this), 'WHERE') as Expression;
     }
+    newQuery['_returning'] = this.flatList(node['_returning'].map(r => r.accept(this))) as AliasableExpression[];
     return newQuery;
   }
 

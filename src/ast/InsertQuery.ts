@@ -1,7 +1,7 @@
 import { IndentedQueryRenderer } from "../renderer/IndentedQueryRenderer";
 import { QueryRenderer } from "../renderer/QueryRenderer";
 import { SqlTreeNodeVisitor } from "../visitor/SqlTreeNodeVisitor";
-import { Expression, SqlTreeNode } from "./Abstractions";
+import { AliasableExpression, Expression, SqlTreeNode } from "./Abstractions";
 
 // Represents an INSERT OR REPLACE statement with a table, columns, and values
 export class InsertQuery implements SqlTreeNode {
@@ -10,6 +10,7 @@ export class InsertQuery implements SqlTreeNode {
   private _columns: string[] = [];
   private _values: Expression[] = [];
   private _orReplace: boolean = false;
+  private _returning: AliasableExpression[] = [];
 
   constructor(tableName: string) {
     this._tableName = tableName;
@@ -34,8 +35,17 @@ export class InsertQuery implements SqlTreeNode {
     return this;
   }
 
+  public returning(...expressions: AliasableExpression[]): InsertQuery {
+    this._returning = expressions;
+    return this;
+  }
+
   public isOrReplace(): boolean {
     return this._orReplace;
+  }
+
+  public get returningClause(): AliasableExpression[] {
+    return this._returning;
   }
 
   public toSQL(renderer?: QueryRenderer): string {

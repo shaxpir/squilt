@@ -10,7 +10,7 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 | CREATE TABLE | DDL | High | Planned |
 | Window Functions | DML | High | Planned |
 | INSERT ... SELECT | DML | Low | Planned |
-| RETURNING Clause | DML | Low | Planned |
+| RETURNING Clause | DML | Low | ✅ Done |
 | DROP TABLE | DDL | Low | Planned |
 | ALTER TABLE | DDL | Medium | Planned |
 | CREATE INDEX | DDL | Medium | Planned |
@@ -424,6 +424,7 @@ interface UsersRow {
 - [x] INSERT and INSERT OR REPLACE queries
 - [x] DELETE queries with WHERE conditions and subqueries
 - [x] UPDATE queries with SET clauses and WHERE conditions
+- [x] RETURNING clause for INSERT, UPDATE, DELETE (SQLite 3.35+)
 - [x] BETWEEN and NOT BETWEEN operators for range queries
 - [x] Comprehensive expression system (binary, unary, functions, literals)
 - [x] Parameter binding with named parameters

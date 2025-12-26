@@ -34,6 +34,7 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitInsertQuery(node: InsertQuery): any[] {
     node['_values'].forEach(v => v.accept(this));
+    node['_returning'].forEach(r => r.accept(this));
     return this.params;
   }
 
@@ -41,6 +42,7 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
     if (node['_where']) {
       node['_where'].accept(this);
     }
+    node['_returning'].forEach(r => r.accept(this));
     return this.params;
   }
 
@@ -49,6 +51,7 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
     if (node['_where']) {
       node['_where'].accept(this);
     }
+    node['_returning'].forEach(r => r.accept(this));
     return this.params;
   }
 

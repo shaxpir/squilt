@@ -397,6 +397,17 @@ export function UPDATE(tableName: string): UpdateQuery {
   return QueryBuilder.update(tableName);
 }
 
+// --- Aliases ---
+
+export function ALIAS(referent: AliasableExpression, alias: string): Alias<AliasableExpression>;
+export function ALIAS(referent: From, alias: string): Alias<From>;
+export function ALIAS(referent: AliasableExpression | From, alias: string): Alias<AliasableExpression> | Alias<From> {
+  if (referent instanceof From) {
+    return new Alias<From>(referent, alias);
+  }
+  return new Alias<AliasableExpression>(referent as AliasableExpression, alias);
+}
+
 // --- Literal Conversion ---
 
 function LAZY(value: LazyExpression): AliasableExpression {

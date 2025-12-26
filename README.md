@@ -143,6 +143,44 @@ console.log(bulkUpdate.toSQL());
 // UPDATE products SET price = 99, on_sale = 1, discount = 10 WHERE (category = 'electronics')
 ```
 
+### RETURNING Clause (SQLite 3.35+)
+
+Get back affected rows from INSERT, UPDATE, and DELETE statements:
+
+```typescript
+import { INSERT, UPDATE, DELETE_FROM, COLUMN, PARAM, EQ, ALIAS, FN } from '@shaxpir/squilt';
+
+// INSERT with RETURNING
+const createUser = INSERT('users', ['name', 'email'], [PARAM('name'), PARAM('email')])
+  .returning(COLUMN('id'), COLUMN('created_at'));
+console.log(createUser.toSQL());
+// INSERT INTO users (name, email) VALUES (?, ?) RETURNING id, created_at
+
+// UPDATE with RETURNING
+const updateUser = UPDATE('users')
+  .set('status', 'active')
+  .where(EQ(COLUMN('id'), PARAM('userId')))
+  .returning(COLUMN('id'), COLUMN('status'), COLUMN('updated_at'));
+console.log(updateUser.toSQL());
+// UPDATE users SET status = 'active' WHERE (id = ?) RETURNING id, status, updated_at
+
+// DELETE with RETURNING
+const deleteInactive = DELETE_FROM('users')
+  .where(EQ(COLUMN('status'), 'inactive'))
+  .returning(COLUMN('id'), COLUMN('email'));
+console.log(deleteInactive.toSQL());
+// DELETE FROM users WHERE (status = 'inactive') RETURNING id, email
+
+// RETURNING with aliased expressions
+const insertWithAlias = INSERT('orders', ['total'], [PARAM('total')])
+  .returning(
+    COLUMN('id'),
+    ALIAS(FN('DATETIME', COLUMN('created_at')), 'order_time')
+  );
+console.log(insertWithAlias.toSQL());
+// INSERT INTO orders (total) VALUES (?) RETURNING id, DATETIME(created_at) AS order_time
+```
+
 ### Range Queries with BETWEEN
 
 Use BETWEEN for range comparisons:
@@ -205,6 +243,7 @@ const params = query.accept(new ParamCollectingVisitor({ userId: 42 }));
 | `SELECT_DISTINCT(...args)` | Create a SELECT DISTINCT query |
 | `FROM(table)` | Create a FROM clause |
 | `COLUMN(name)` or `COLUMN(table, name)` | Reference a column |
+| `ALIAS(expr, name)` | Create an aliased expression |
 | `EQ`, `NOT_EQ`, `GT`, `LT`, `GTE`, `LTE` | Comparison operators |
 | `BETWEEN`, `NOT_BETWEEN` | Range operators |
 | `AND`, `OR`, `NOT` | Logical operators |
