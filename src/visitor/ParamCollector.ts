@@ -7,6 +7,7 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
 import { SubqueryExpression } from "../ast/SubqueryExpression";
+import { WindowExpression } from "../ast/WindowExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -278,6 +279,16 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
 
   visitSubqueryExpression(node: SubqueryExpression): any[] {
     node.subquery.accept(this);
+    return this.params;
+  }
+
+  visitWindowExpression(node: WindowExpression): any[] {
+    // Collect params from the underlying function
+    node.function.accept(this);
+    // Collect params from partition by columns
+    node.windowSpec.partitionByColumns.forEach(c => c.accept(this));
+    // Collect params from order by clauses
+    node.windowSpec.orderByColumns.forEach(o => o.accept(this));
     return this.params;
   }
 }

@@ -388,6 +388,24 @@ export function ORDER_BY(column: Column | string, direction: OrderByDirection = 
   return new OrderBy(typeof column === 'string' ? COLUMN(column) : column, direction);
 }
 
+/**
+ * Creates a PARTITION BY clause for window functions.
+ *
+ * Returns an Expression[] that can be passed to FunctionExpression.over()
+ *
+ * @example
+ * ```typescript
+ * FN('RANK').over(PARTITION_BY('category'), ORDER_BY('price', DESC))
+ * // RANK() OVER (PARTITION BY category ORDER BY price DESC)
+ *
+ * FN('ROW_NUMBER').over(PARTITION_BY('department', 'location'), ORDER_BY('salary'))
+ * // ROW_NUMBER() OVER (PARTITION BY department, location ORDER BY salary)
+ * ```
+ */
+export function PARTITION_BY(...columns: (Column | string)[]): Expression[] {
+  return columns.map(col => (typeof col === 'string' ? COLUMN(col) : col));
+}
+
 // --- CASE Expressions ---
 
 export function CASE(lazyCases: LazyCaseItem[]): CaseExpression {

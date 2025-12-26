@@ -7,6 +7,7 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
 import { SubqueryExpression } from "../ast/SubqueryExpression";
+import { WindowExpression } from "../ast/WindowExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -522,6 +523,15 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
 
   visitSubqueryExpression(node: SubqueryExpression): void {
     node.subquery.accept(this);
+  }
+
+  visitWindowExpression(node: WindowExpression): void {
+    // Validate the underlying function
+    node.function.accept(this);
+    // Validate partition by columns
+    node.windowSpec.partitionByColumns.forEach(c => c.accept(this));
+    // Validate order by clauses
+    node.windowSpec.orderByColumns.forEach(o => o.accept(this));
   }
 
   visitFunctionExpression(node: FunctionExpression): void {

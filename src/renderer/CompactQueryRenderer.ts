@@ -7,6 +7,7 @@ import { CaseExpression } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
 import { SubqueryExpression } from "../ast/SubqueryExpression";
+import { WindowExpression } from "../ast/WindowExpression";
 import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -470,6 +471,21 @@ export class CompactQueryRenderer
 
   visitSubqueryExpression(node: SubqueryExpression): string {
     return `(${node.subquery.accept(this)})`;
+  }
+
+  visitWindowExpression(node: WindowExpression): string {
+    const fnPart = node.function.accept(this);
+    const spec = node.windowSpec;
+
+    const parts: string[] = [];
+    if (spec.partitionByColumns.length > 0) {
+      parts.push(`PARTITION BY ${spec.partitionByColumns.map(c => c.accept(this)).join(', ')}`);
+    }
+    if (spec.orderByColumns.length > 0) {
+      parts.push(`ORDER BY ${spec.orderByColumns.map(o => o.accept(this)).join(', ')}`);
+    }
+
+    return `${fnPart} OVER (${parts.join(' ')})`;
   }
 
   visitFunctionExpression(node: FunctionExpression): string {

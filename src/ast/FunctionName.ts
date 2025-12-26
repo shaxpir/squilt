@@ -1,4 +1,5 @@
 export type FunctionName =
+    // Standard SQL functions
     'ABS'
   | 'AVG'
   | 'CEIL'
@@ -40,6 +41,18 @@ export type FunctionName =
   | 'UNICODE'
   | 'UPPER'
   | 'ZEROBLOB'
+  // Window functions
+  | 'ROW_NUMBER'
+  | 'RANK'
+  | 'DENSE_RANK'
+  | 'NTILE'
+  | 'LAG'
+  | 'LEAD'
+  | 'FIRST_VALUE'
+  | 'LAST_VALUE'
+  | 'NTH_VALUE'
+  | 'CUME_DIST'
+  | 'PERCENT_RANK'
   | 'json'
   | 'json_array'
   | 'json_array_length'

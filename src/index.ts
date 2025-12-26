@@ -30,6 +30,8 @@ export { Operator } from './ast/Operator';
 export { OrderBy, OrderByDirection } from './ast/OrderBy';
 export { SelectQuery } from './ast/SelectQuery';
 export { UnaryExpression } from './ast/UnaryExpression';
+export { WindowExpression } from './ast/WindowExpression';
+export { WindowSpecification } from './ast/WindowSpecification';
 export { With } from './ast/With';
 
 // Builder
@@ -73,7 +75,7 @@ export {
   // IN expressions
   IN, NOT_IN,
   // Clauses
-  GROUP_BY, HAVING, ORDER_BY,
+  GROUP_BY, HAVING, ORDER_BY, PARTITION_BY,
   // CASE expressions
   CASE,
   // CAST expressions

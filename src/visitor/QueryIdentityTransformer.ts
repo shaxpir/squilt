@@ -7,6 +7,8 @@ import { CaseExpression, CaseItem } from "../ast/CaseExpression";
 import { CastExpression } from "../ast/CastExpression";
 import { CollateExpression } from "../ast/CollateExpression";
 import { SubqueryExpression } from "../ast/SubqueryExpression";
+import { WindowExpression } from "../ast/WindowExpression";
+import { WindowSpecification } from "../ast/WindowSpecification";
 import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
@@ -401,5 +403,23 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     return new SubqueryExpression(
       this.expectSingle(node.subquery.accept(this), 'subquery') as SelectQuery
     );
+  }
+
+  visitWindowExpression(node: WindowExpression): SqlTreeNode | SqlTreeNode[] {
+    const newFn = this.expectSingle(node.function.accept(this), 'window function') as FunctionExpression;
+
+    const newWindowSpec = new WindowSpecification();
+    if (node.windowSpec.partitionByColumns.length > 0) {
+      newWindowSpec.setPartitionBy(
+        this.flatList(node.windowSpec.partitionByColumns.map(c => c.accept(this))) as Expression[]
+      );
+    }
+    if (node.windowSpec.orderByColumns.length > 0) {
+      newWindowSpec.setOrderBy(
+        this.flatList(node.windowSpec.orderByColumns.map(o => o.accept(this))) as OrderBy[]
+      );
+    }
+
+    return new WindowExpression(newFn, newWindowSpec);
   }
 }

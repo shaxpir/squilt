@@ -8,7 +8,7 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 |---------|----------|------------|--------|
 | UPSERT (ON CONFLICT) | DML | Medium | ✅ Done |
 | CREATE TABLE | DDL | High | ✅ Done |
-| Window Functions | DML | High | Planned |
+| Window Functions | DML | High | ⚡ Partial |
 | INSERT ... SELECT | DML | Low | ✅ Done |
 | RETURNING Clause | DML | Low | ✅ Done |
 | DROP TABLE | DDL | Low | ✅ Done |
@@ -183,9 +183,9 @@ INSERT('events', ['id', 'data'], [PARAM('id'), PARAM('data')])
   .doNothing();
 ```
 
-### Window Functions
+### Window Functions ⚡ Partial
 
-Analytics functions with OVER clauses.
+Analytics functions with OVER clauses. **Implemented!**
 
 ```typescript
 SELECT(
@@ -196,26 +196,33 @@ SELECT(
     PARTITION_BY('category'),
     ORDER_BY('amount', DESC)
   ).as('rank'),
-  FN('SUM', COLUMN('amount')).over(
+  SUM(COLUMN('amount')).over(
     PARTITION_BY('category')
   ).as('category_total')
 )
 
-// Would generate:
+// Generates:
 // SELECT product, amount,
 //   ROW_NUMBER() OVER (PARTITION BY category ORDER BY amount DESC) AS rank,
 //   SUM(amount) OVER (PARTITION BY category) AS category_total
 // FROM sales
 ```
 
-**Window functions to support:**
-- ROW_NUMBER(), RANK(), DENSE_RANK()
-- LAG(), LEAD()
-- FIRST_VALUE(), LAST_VALUE(), NTH_VALUE()
-- Aggregate functions with OVER (SUM, COUNT, AVG, MIN, MAX)
-- PARTITION BY clause
-- ORDER BY within window
-- Frame specifications (ROWS BETWEEN, RANGE BETWEEN)
+**Implemented features:**
+- ✅ ROW_NUMBER(), RANK(), DENSE_RANK(), NTILE()
+- ✅ LAG(), LEAD() with offset and default value
+- ✅ FIRST_VALUE(), LAST_VALUE(), NTH_VALUE()
+- ✅ CUME_DIST(), PERCENT_RANK()
+- ✅ Aggregate functions with OVER (SUM, COUNT, AVG, MIN, MAX)
+- ✅ PARTITION BY clause with multiple columns
+- ✅ ORDER BY within window with multiple columns and directions
+- ✅ Empty OVER clause for window over entire result set
+- ✅ Method chaining: `FN('...').over()` and `SUM(...).over()`
+
+**Not yet implemented:**
+- ❌ Frame specifications (ROWS BETWEEN, RANGE BETWEEN, GROUPS BETWEEN)
+- ❌ Named windows (WINDOW w AS (...) at query level)
+- ❌ FILTER clause (COUNT(*) FILTER (WHERE ...) OVER (...))
 
 ### INSERT ... SELECT
 
@@ -452,3 +459,4 @@ interface UsersRow {
 - [x] GLOB operator for Unix-style pattern matching
 - [x] COLLATE operator for specifying collation
 - [x] Scalar subquery expressions in SELECT, WHERE, CASE, and function arguments
+- [x] Window functions with OVER clause (PARTITION BY, ORDER BY) - frame specs not yet implemented
