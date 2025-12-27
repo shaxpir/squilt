@@ -13,6 +13,7 @@ import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery, ColumnDefinition, TableConstraint } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -263,6 +264,35 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
     }
     if (node.isStrict) {
       newQuery.strict();
+    }
+
+    return newQuery;
+  }
+
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): SqlTreeNode | SqlTreeNode[] {
+    const newQuery = new CreateVirtualTableQuery(node.tableName, node.module);
+
+    // Copy columns
+    for (const col of node.columns) {
+      newQuery.column(col);
+    }
+
+    // Copy options
+    if (node.options.tokenize) {
+      newQuery.tokenize(node.options.tokenize);
+    }
+    if (node.options.content) {
+      newQuery.content(node.options.content);
+    }
+    if (node.options.contentRowid) {
+      newQuery.contentRowid(node.options.contentRowid);
+    }
+    if (node.options.prefix) {
+      newQuery.prefix(node.options.prefix);
+    }
+
+    if (node.hasIfNotExists) {
+      newQuery.ifNotExists();
     }
 
     return newQuery;

@@ -12,6 +12,7 @@ import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery, ColumnDefinition, TableConstraint } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -249,6 +250,43 @@ export class IndentedQueryRenderer
     }
 
     this.dedent();
+    return parts.join('\n');
+  }
+
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): string {
+    this.indent();
+    const parts: string[] = [];
+    const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
+    parts.push(`${this.getIndent()}CREATE VIRTUAL TABLE${ifNotExists} ${quoteIdentifier(node.tableName)} USING ${node.module}(`);
+
+    this.indent();
+    const args: string[] = [];
+
+    // Add columns (FTS5 columns don't have types)
+    for (const col of node.columns) {
+      args.push(`${this.getIndent()}${quoteIdentifier(col)}`);
+    }
+
+    // Add FTS5 options
+    const opts = node.options;
+    if (opts.tokenize) {
+      args.push(`${this.getIndent()}tokenize = '${opts.tokenize}'`);
+    }
+    if (opts.content) {
+      args.push(`${this.getIndent()}content = '${opts.content}'`);
+    }
+    if (opts.contentRowid) {
+      args.push(`${this.getIndent()}content_rowid = '${opts.contentRowid}'`);
+    }
+    if (opts.prefix) {
+      args.push(`${this.getIndent()}prefix = '${opts.prefix}'`);
+    }
+
+    parts.push(args.join(',\n'));
+    this.dedent();
+    parts.push(`${this.getIndent()})`);
+    this.dedent();
+
     return parts.join('\n');
   }
 

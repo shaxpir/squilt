@@ -1,6 +1,7 @@
 import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -27,6 +28,7 @@ type ValidatableQuery =
   | UpdateQuery
   | DeleteQuery
   | CreateTableQuery
+  | CreateVirtualTableQuery
   | CreateIndexQuery
   | CreateViewQuery
   | AlterTableQuery
@@ -44,7 +46,7 @@ export class SQLiteQueryValidator
     'LOWER', 'UPPER', 'LENGTH', 'SUBSTR', 'TRIM', 'LTRIM', 'RTRIM',
     'REPLACE', 'INSTR', 'QUOTE', 'CHAR', 'UNICODE', 'HEX', 'ZEROBLOB',
     'COALESCE', 'IFNULL', 'NULLIF', 'TYPEOF', 'TOTAL_CHANGES', 'CHANGES',
-    'LAST_INSERT_ROWID',
+    'LAST_INSERT_ROWID', 'CONCAT',
     // Aggregate functions
     'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'TOTAL', 'GROUP_CONCAT',
     // Date and time functions
@@ -53,7 +55,13 @@ export class SQLiteQueryValidator
     'json', 'json_array', 'json_object', 'json_extract', 'json_insert',
     'json_replace', 'json_set', 'json_remove', 'json_type', 'json_valid',
     'json_quote', 'json_patch', 'json_array_length', 'json_group_array',
-    'json_group_object', 'json_each', 'json_tree'
+    'json_group_object', 'json_each', 'json_tree',
+    // Window functions
+    'ROW_NUMBER', 'RANK', 'DENSE_RANK', 'NTILE',
+    'LAG', 'LEAD', 'FIRST_VALUE', 'LAST_VALUE', 'NTH_VALUE',
+    'CUME_DIST', 'PERCENT_RANK',
+    // FTS5 functions
+    'bm25', 'highlight', 'snippet', 'offsets', 'matchinfo'
   ]);
 
   private supportedUnaryOperators: Set<string> = new Set([
@@ -143,5 +151,23 @@ export class SQLiteQueryValidator
 
   visitInExpression(node: InExpression): void {
     super.visitInExpression(node);
+  }
+
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): void {
+    super.visitCreateVirtualTableQuery(node);
+
+    // FTS5-specific validation
+    if (node.module === 'fts5') {
+      // Validate content table reference if specified
+      if (node.options.content) {
+        // Content table name should be a valid identifier
+        // Note: we can't validate that the table exists at this point
+      }
+
+      // If contentRowid is specified, content must also be specified
+      if (node.options.contentRowid && !node.options.content) {
+        throw new Error('FTS5 content_rowid requires content option to be specified');
+      }
+    }
   }
 }

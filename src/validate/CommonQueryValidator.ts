@@ -12,6 +12,7 @@ import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -47,7 +48,7 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
   private columnCount: number | null = null;
   private isGrouped: boolean = false;
 
-  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery | CreateTableQuery | CreateIndexQuery | CreateViewQuery | AlterTableQuery | DropTableQuery | DropIndexQuery | DropViewQuery): void {
+  public validate(query: SelectQuery | InsertQuery | UpdateQuery | DeleteQuery | CreateTableQuery | CreateVirtualTableQuery | CreateIndexQuery | CreateViewQuery | AlterTableQuery | DropTableQuery | DropIndexQuery | DropViewQuery): void {
     this.reset();
     query.accept(this);
   }
@@ -281,6 +282,18 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
       if (constraint.check) {
         constraint.check.accept(this);
       }
+    }
+  }
+
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): void {
+    this.validateIdentifier(node.tableName, 'CreateVirtualTableQuery');
+    // Virtual tables are database-specific, validated by dialect validators
+    // Basic validation: must have at least one column for FTS5
+    if (node.columns.length === 0) {
+      throw new Error('CreateVirtualTableQuery must have at least one column');
+    }
+    for (const col of node.columns) {
+      this.validateIdentifier(col, 'FTS5 column');
     }
   }
 

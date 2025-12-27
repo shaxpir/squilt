@@ -3,6 +3,7 @@ import { InsertQuery } from "../ast/InsertQuery";
 import { UpdateQuery } from "../ast/UpdateQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery, VirtualTableModule } from "../ast/CreateVirtualTableQuery";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { AlterTableQuery } from "../ast/AlterTableQuery";
@@ -32,6 +33,10 @@ export class QueryBuilder {
 
   public static createTable(tableName: string): CreateTableQuery {
     return new CreateTableQuery(tableName);
+  }
+
+  public static createVirtualTable(tableName: string, module: VirtualTableModule): CreateVirtualTableQuery {
+    return new CreateVirtualTableQuery(tableName, module);
   }
 
   public static createIndex(indexName: string): CreateIndexQuery {

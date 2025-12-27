@@ -69,4 +69,10 @@ export type FunctionName =
   | 'json_set'
   | 'json_tree'
   | 'json_type'
-  | 'json_valid';
+  | 'json_valid'
+  // FTS5 functions
+  | 'bm25'
+  | 'highlight'
+  | 'snippet'
+  | 'offsets'
+  | 'matchinfo';

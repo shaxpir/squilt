@@ -10,6 +10,7 @@ export enum Operator {
   LESS_THAN_OR_EQUAL = '<=',
   LIKE = 'LIKE',
   GLOB = 'GLOB',
+  MATCH = 'MATCH',
   MINUS = '-',
   PLUS = '+',
   MULTIPLY = '*',

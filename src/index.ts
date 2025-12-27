@@ -18,6 +18,7 @@ export { InsertQuery } from './ast/InsertQuery';
 export { UpdateQuery, SetClause } from './ast/UpdateQuery';
 export { DeleteQuery } from './ast/DeleteQuery';
 export { CreateTableQuery, ColumnType, ForeignKeyReference, ColumnConstraints, ColumnDefinition, TableConstraint } from './ast/CreateTableQuery';
+export { CreateVirtualTableQuery, VirtualTableModule, FTS5Options } from './ast/CreateVirtualTableQuery';
 export { CreateIndexQuery } from './ast/CreateIndexQuery';
 export { CreateViewQuery } from './ast/CreateViewQuery';
 export { AlterTableQuery, AlterTableOperation } from './ast/AlterTableQuery';
@@ -40,7 +41,7 @@ export {
   // Value helpers
   VAL,
   // Operators
-  EQ, NOT_EQ, NOT, GT, LT, GTE, LTE, LIKE, GLOB,
+  EQ, NOT_EQ, NOT, GT, LT, GTE, LTE, LIKE, GLOB, MATCH,
   BETWEEN, NOT_BETWEEN,
   IS_NULL, IS_NOT_NULL,
   PLUS, MINUS, MULTIPLY, DIVIDE,
@@ -67,6 +68,7 @@ export {
   UPDATE,
   // Create/Drop queries
   CREATE_TABLE,
+  CREATE_VIRTUAL_TABLE,
   CREATE_INDEX,
   CREATE_VIEW,
   DROP_TABLE,

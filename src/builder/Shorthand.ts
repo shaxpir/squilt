@@ -11,6 +11,7 @@ import { Concat } from "../ast/Concat";
 import { AlterTableQuery } from "../ast/AlterTableQuery";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery, VirtualTableModule } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -82,6 +83,10 @@ export function LIKE(left: LazyExpression, right: LazyExpression): BinaryExpress
 
 export function GLOB(left: LazyExpression, right: LazyExpression): BinaryExpression {
   return new BinaryExpression(LAZY(left), Operator.GLOB, LAZY(right));
+}
+
+export function MATCH(left: LazyExpression, right: LazyExpression): BinaryExpression {
+  return new BinaryExpression(LAZY(left), Operator.MATCH, LAZY(right));
 }
 
 export function BETWEEN(operand: LazyExpression, low: LazyExpression, high: LazyExpression): BetweenExpression {
@@ -449,6 +454,12 @@ export function UPDATE(tableName: string): UpdateQuery {
 
 export function CREATE_TABLE(tableName: string): CreateTableQuery {
   return QueryBuilder.createTable(tableName);
+}
+
+// --- Create Virtual Table Queries ---
+
+export function CREATE_VIRTUAL_TABLE(tableName: string, module: VirtualTableModule): CreateVirtualTableQuery {
+  return QueryBuilder.createVirtualTable(tableName, module);
 }
 
 // --- Create Index Queries ---

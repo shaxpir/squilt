@@ -12,6 +12,7 @@ import { Column, ColumnLike } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -36,6 +37,7 @@ export interface SqlTreeNodeVisitor<T> {
   visitDeleteQuery(node: DeleteQuery): T;
   visitUpdateQuery(node: UpdateQuery): T;
   visitCreateTableQuery(node: CreateTableQuery): T;
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): T;
   visitCreateIndexQuery(node: CreateIndexQuery): T;
   visitCreateViewQuery(node: CreateViewQuery): T;
   visitAlterTableQuery(node: AlterTableQuery): T;

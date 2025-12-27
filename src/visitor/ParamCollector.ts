@@ -12,6 +12,7 @@ import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -127,6 +128,11 @@ export class ParamCollectingVisitor implements SqlTreeNodeVisitor<any[]> {
         constraint.check.accept(this);
       }
     }
+    return this.params;
+  }
+
+  visitCreateVirtualTableQuery(_node: CreateVirtualTableQuery): any[] {
+    // CREATE VIRTUAL TABLE has no parameters
     return this.params;
   }
 

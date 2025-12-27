@@ -12,6 +12,7 @@ import { Column } from "../ast/Column";
 import { Concat } from "../ast/Concat";
 import { CreateIndexQuery } from "../ast/CreateIndexQuery";
 import { CreateTableQuery, ColumnDefinition, TableConstraint } from "../ast/CreateTableQuery";
+import { CreateVirtualTableQuery } from "../ast/CreateVirtualTableQuery";
 import { CreateViewQuery } from "../ast/CreateViewQuery";
 import { DeleteQuery } from "../ast/DeleteQuery";
 import { DropIndexQuery } from "../ast/DropIndexQuery";
@@ -217,6 +218,33 @@ export class CompactQueryRenderer
     }
 
     return parts.join('');
+  }
+
+  visitCreateVirtualTableQuery(node: CreateVirtualTableQuery): string {
+    const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
+    const args: string[] = [];
+
+    // Add columns (FTS5 columns don't have types)
+    for (const col of node.columns) {
+      args.push(quoteIdentifier(col));
+    }
+
+    // Add FTS5 options
+    const opts = node.options;
+    if (opts.tokenize) {
+      args.push(`tokenize = '${opts.tokenize}'`);
+    }
+    if (opts.content) {
+      args.push(`content = '${opts.content}'`);
+    }
+    if (opts.contentRowid) {
+      args.push(`content_rowid = '${opts.contentRowid}'`);
+    }
+    if (opts.prefix) {
+      args.push(`prefix = '${opts.prefix}'`);
+    }
+
+    return `CREATE VIRTUAL TABLE${ifNotExists} ${quoteIdentifier(node.tableName)} USING ${node.module}(${args.join(', ')})`;
   }
 
   protected renderColumnDefinition(col: ColumnDefinition): string {

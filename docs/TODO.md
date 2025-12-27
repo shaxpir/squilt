@@ -16,7 +16,7 @@ A comprehensive feature roadmap for the squilt SQL query builder library.
 | ALTER TABLE | DDL | Medium | ✅ Done |
 | CREATE INDEX | DDL | Medium | ✅ Done |
 | CREATE VIEW / DROP VIEW | DDL | Low | ✅ Done |
-| Full-Text Search | DDL/DML | High | Planned |
+| Full-Text Search (FTS5) | DDL/DML | High | ✅ Done |
 
 ---
 
@@ -114,22 +114,23 @@ CREATE_VIEW('active_users').as(
 DROP_VIEW('old_view').ifExists();
 ```
 
-### Full-Text Search (FTS5)
+### Full-Text Search (FTS5) ✅
 
-SQLite's FTS5 virtual tables enable powerful text search capabilities.
+SQLite's FTS5 virtual tables enable powerful text search capabilities. **Implemented!**
 
 ```typescript
 // Create FTS table
-CREATE_VIRTUAL_TABLE('documents_fts')
-  .using('fts5', {
-    columns: ['title', 'content', 'author'],
-    contentTable: 'documents',  // External content mode
-    tokenizer: 'porter unicode61'
-  });
+CREATE_VIRTUAL_TABLE('documents_fts', 'fts5')
+  .column('title')
+  .column('content')
+  .column('author')
+  .tokenize('porter unicode61')
+  .content('documents')  // External content mode
+  .contentRowid('id');
 
 // Full-text search query
 SELECT(FROM('documents_fts'), COLUMN('*'))
-  .where(MATCH('documents_fts', 'sqlite AND database'));
+  .where(MATCH(COLUMN('documents_fts'), 'sqlite AND database'));
 
 // Ranked results with BM25
 SELECT(
@@ -138,8 +139,8 @@ SELECT(
   COLUMN('content'),
   FN('bm25', COLUMN('documents_fts')).as('rank')
 )
-.where(MATCH('documents_fts', 'query terms'))
-.orderBy('rank');
+.where(MATCH(COLUMN('documents_fts'), 'query terms'))
+.orderBy('rank', OrderByDirection.ASC);
 
 // Highlight snippets
 SELECT(
@@ -147,18 +148,22 @@ SELECT(
   FN('highlight', COLUMN('documents_fts'), 0, '<b>', '</b>').as('title'),
   FN('snippet', COLUMN('documents_fts'), 1, '<b>', '</b>', '...', 20).as('excerpt')
 )
-.where(MATCH('documents_fts', 'search query'));
+.where(MATCH(COLUMN('documents_fts'), 'search query'));
 ```
 
-**FTS5 features to support:**
-- Virtual table creation with FTS5 module
-- MATCH operator for full-text queries
-- BM25 ranking function
-- highlight() and snippet() auxiliary functions
-- Boolean operators in search (AND, OR, NOT)
-- Phrase queries and prefix queries
-- Content tables (external content mode)
-- Tokenizer configuration
+**Implemented features:**
+- ✅ CREATE VIRTUAL TABLE with FTS5 module
+- ✅ FTS5 column definitions
+- ✅ FTS5 options: tokenize, content, content_rowid, prefix
+- ✅ IF NOT EXISTS clause
+- ✅ MATCH operator for full-text queries
+- ✅ FTS5 functions: bm25, highlight, snippet, offsets, matchinfo
+- ✅ SQLite-specific validation for FTS5
+
+**Not yet implemented:**
+- ❌ Other virtual table modules (rtree, generate_series)
+- ❌ FTS5 column filters in queries
+- ❌ Custom tokenizers
 
 ---
 
@@ -460,3 +465,4 @@ interface UsersRow {
 - [x] COLLATE operator for specifying collation
 - [x] Scalar subquery expressions in SELECT, WHERE, CASE, and function arguments
 - [x] Window functions with OVER clause (PARTITION BY, ORDER BY) - frame specs not yet implemented
+- [x] FTS5 Full-Text Search: CREATE VIRTUAL TABLE, MATCH operator, FTS5 functions (bm25, highlight, snippet)
