@@ -77,7 +77,7 @@ DROP_TABLE('temp_data');
 DROP_TABLE('cache').ifExists();
 ```
 
-### CREATE INDEX / DROP INDEX
+### CREATE INDEX / DROP INDEX ✅
 
 ```typescript
 // Simple index
@@ -96,6 +96,18 @@ CREATE_INDEX('idx_users_email')
 CREATE_INDEX('idx_active_users')
   .on('users', 'email')
   .where(EQ(COLUMN('active'), true));
+
+// Expression index (e.g., for JSON fields)
+CREATE_INDEX('idx_data_field')
+  .on('docs', FN('json_extract', COLUMN('data'), '$.field'));
+
+// Expression index with LOWER
+CREATE_INDEX('idx_email_lower')
+  .on('users', FN('LOWER', COLUMN('email')));
+
+// Mixed columns and expressions
+CREATE_INDEX('idx_composite')
+  .on('users', ['id', FN('LOWER', COLUMN('name'))]);
 
 // Drop index
 DROP_INDEX('idx_old_index');
@@ -448,7 +460,7 @@ interface UsersRow {
 - [x] UPSERT (ON CONFLICT) with DO UPDATE and DO NOTHING (SQLite 3.24+)
 - [x] DROP TABLE and DROP INDEX with IF EXISTS
 - [x] CREATE TABLE with column constraints, table constraints, and SQLite options
-- [x] CREATE INDEX with UNIQUE, partial indexes (WHERE clause), and IF NOT EXISTS
+- [x] CREATE INDEX with UNIQUE, partial indexes (WHERE clause), expression indexes, and IF NOT EXISTS
 - [x] CREATE VIEW with column names, TEMPORARY, and IF NOT EXISTS
 - [x] ALTER TABLE with ADD COLUMN, RENAME COLUMN, DROP COLUMN, and RENAME TO
 - [x] DROP VIEW with IF EXISTS

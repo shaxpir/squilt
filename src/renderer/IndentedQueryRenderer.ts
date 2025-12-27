@@ -185,7 +185,17 @@ export class IndentedQueryRenderer
     const unique = node.isUnique ? 'UNIQUE ' : '';
     const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
 
-    let sql = `CREATE ${unique}INDEX${ifNotExists} ${quoteIdentifier(node.indexName)} ON ${quoteIdentifier(node.tableName)} (${node.columns.map(quoteIdentifier).join(', ')})`;
+    // Render each column - strings are quoted, expressions are rendered
+    const columnList = node.columns.map(col => {
+      if (typeof col === 'string') {
+        return quoteIdentifier(col);
+      } else {
+        // It's an Expression, render it
+        return col.accept(this);
+      }
+    }).join(', ');
+
+    let sql = `CREATE ${unique}INDEX${ifNotExists} ${quoteIdentifier(node.indexName)} ON ${quoteIdentifier(node.tableName)} (${columnList})`;
 
     if (node.whereExpression) {
       sql += ` WHERE ${node.whereExpression.accept(this)}`;

@@ -3,12 +3,19 @@ import { QueryRenderer } from "../renderer/QueryRenderer";
 import { SqlTreeNodeVisitor } from "../visitor/SqlTreeNodeVisitor";
 import { Expression, SqlTreeNode } from "./Abstractions";
 
+/**
+ * Represents an index column, which can be either:
+ * - A simple column name (string)
+ * - An expression (e.g., FN('json_extract', COLUMN('data'), '$.field'))
+ */
+export type IndexColumn = string | Expression;
+
 // Represents a CREATE INDEX statement
 export class CreateIndexQuery implements SqlTreeNode {
 
   private _indexName: string;
   private _tableName: string = '';
-  private _columns: string[] = [];
+  private _columns: IndexColumn[] = [];
   private _unique: boolean = false;
   private _ifNotExists: boolean = false;
   private _where: Expression | null = null;
@@ -21,7 +28,27 @@ export class CreateIndexQuery implements SqlTreeNode {
     return new CreateIndexQuery(indexName);
   }
 
-  public on(tableName: string, columns: string | string[]): CreateIndexQuery {
+  /**
+   * Specify the table and columns for the index.
+   *
+   * Columns can be:
+   * - Simple column names: 'column_name' or ['col1', 'col2']
+   * - Expressions: FN('json_extract', COLUMN('data'), '$.field')
+   * - Mixed: ['col1', FN('LOWER', COLUMN('name'))]
+   *
+   * @example
+   * // Simple column index
+   * CREATE_INDEX('idx_users_email').on('users', 'email')
+   *
+   * @example
+   * // Expression index (e.g., for JSON fields)
+   * CREATE_INDEX('idx_data_field').on('docs', FN('json_extract', COLUMN('data'), '$.field'))
+   *
+   * @example
+   * // Composite index with expression
+   * CREATE_INDEX('idx_name_lower').on('users', [COLUMN('id'), FN('LOWER', COLUMN('name'))])
+   */
+  public on(tableName: string, columns: IndexColumn | IndexColumn[]): CreateIndexQuery {
     this._tableName = tableName;
     this._columns = Array.isArray(columns) ? columns : [columns];
     return this;
@@ -50,7 +77,7 @@ export class CreateIndexQuery implements SqlTreeNode {
     return this._tableName;
   }
 
-  public get columns(): string[] {
+  public get columns(): IndexColumn[] {
     return this._columns;
   }
 

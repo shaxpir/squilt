@@ -19,7 +19,7 @@ export { UpdateQuery, SetClause } from './ast/UpdateQuery';
 export { DeleteQuery } from './ast/DeleteQuery';
 export { CreateTableQuery, ColumnType, ForeignKeyReference, ColumnConstraints, ColumnDefinition, TableConstraint } from './ast/CreateTableQuery';
 export { CreateVirtualTableQuery, VirtualTableModule, FTS5Options } from './ast/CreateVirtualTableQuery';
-export { CreateIndexQuery } from './ast/CreateIndexQuery';
+export { CreateIndexQuery, IndexColumn } from './ast/CreateIndexQuery';
 export { CreateViewQuery } from './ast/CreateViewQuery';
 export { AlterTableQuery, AlterTableOperation } from './ast/AlterTableQuery';
 export { DropTableQuery } from './ast/DropTableQuery';

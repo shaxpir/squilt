@@ -157,8 +157,18 @@ export class CompactQueryRenderer
     const unique = node.isUnique ? 'UNIQUE ' : '';
     const ifNotExists = node.hasIfNotExists ? ' IF NOT EXISTS' : '';
 
+    // Render each column - strings are quoted, expressions are rendered
+    const columnList = node.columns.map(col => {
+      if (typeof col === 'string') {
+        return quoteIdentifier(col);
+      } else {
+        // It's an Expression, render it
+        return col.accept(this);
+      }
+    }).join(', ');
+
     parts.push(`CREATE ${unique}INDEX${ifNotExists} ${quoteIdentifier(node.indexName)}`);
-    parts.push(`ON ${quoteIdentifier(node.tableName)} (${node.columns.map(quoteIdentifier).join(', ')})`);
+    parts.push(`ON ${quoteIdentifier(node.tableName)} (${columnList})`);
 
     if (node.whereExpression) {
       parts.push(`WHERE ${node.whereExpression.accept(this)}`);

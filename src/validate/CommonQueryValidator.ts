@@ -184,7 +184,13 @@ export class CommonQueryValidator implements QueryValidator, SqlTreeNodeVisitor<
     }
 
     for (const col of node.columns) {
-      this.validateIdentifier(col, 'CreateIndexQuery column');
+      if (typeof col === 'string') {
+        // String column - validate as identifier
+        this.validateIdentifier(col, 'CreateIndexQuery column');
+      } else {
+        // Expression column - validate the expression
+        col.accept(this);
+      }
     }
 
     if (node.whereExpression) {

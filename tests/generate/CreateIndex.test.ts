@@ -1,9 +1,9 @@
-import { CREATE_INDEX, EQ, COLUMN } from '../../src/builder/Shorthand';
+import { CREATE_INDEX, EQ, COLUMN, FN } from '../../src/builder/Shorthand';
 import { CreateIndexQuery } from '../../src/ast/CreateIndexQuery';
 import { CompactQueryRenderer } from '../../src/renderer/CompactQueryRenderer';
 import { IndentedQueryRenderer } from '../../src/renderer/IndentedQueryRenderer';
 import { QueryBuilder } from '../../src/builder/QueryBuilder';
-import { NumberLiteral } from '../../src/ast/Literals';
+import { NumberLiteral, StringLiteral } from '../../src/ast/Literals';
 
 describe('CREATE INDEX', () => {
   describe('Basic index creation', () => {
@@ -206,6 +206,75 @@ describe('CREATE INDEX', () => {
 
       const sql = query.toSQL(new CompactQueryRenderer());
       expect(sql).toBe('CREATE INDEX idx_active_users ON users (email) WHERE (active = 1)');
+    });
+  });
+
+  describe('Expression indexes', () => {
+    it('should create an index on a function expression', () => {
+      const query = CREATE_INDEX('idx_name_lower')
+        .on('users', FN('LOWER', COLUMN('name')));
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe('CREATE INDEX idx_name_lower ON users (LOWER(name))');
+    });
+
+    it('should create an index on json_extract', () => {
+      const query = CREATE_INDEX('idx_data_field')
+        .on('docs', FN('json_extract', COLUMN('data'), new StringLiteral('$.field')));
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe("CREATE INDEX idx_data_field ON docs (json_extract(data, '$.field'))");
+    });
+
+    it('should create a composite index with mixed columns and expressions', () => {
+      const query = CREATE_INDEX('idx_users_composite')
+        .on('users', ['id', FN('LOWER', COLUMN('email'))]);
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe('CREATE INDEX idx_users_composite ON users (id, LOWER(email))');
+    });
+
+    it('should create an expression index with IF NOT EXISTS', () => {
+      const query = CREATE_INDEX('idx_data_field')
+        .on('docs', FN('json_extract', COLUMN('data'), new StringLiteral('$.type')))
+        .ifNotExists();
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe("CREATE INDEX IF NOT EXISTS idx_data_field ON docs (json_extract(data, '$.type'))");
+    });
+
+    it('should create a unique expression index', () => {
+      const query = CREATE_INDEX('idx_email_lower')
+        .on('users', FN('LOWER', COLUMN('email')))
+        .unique();
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe('CREATE UNIQUE INDEX idx_email_lower ON users (LOWER(email))');
+    });
+
+    it('should create an expression index with WHERE clause', () => {
+      const query = CREATE_INDEX('idx_active_data')
+        .on('docs', FN('json_extract', COLUMN('data'), new StringLiteral('$.status')))
+        .where(EQ(COLUMN('active'), new NumberLiteral(1)));
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe("CREATE INDEX idx_active_data ON docs (json_extract(data, '$.status')) WHERE (active = 1)");
+    });
+
+    it('should work with indented renderer', () => {
+      const query = CREATE_INDEX('idx_data_field')
+        .on('docs', FN('json_extract', COLUMN('data'), new StringLiteral('$.field')));
+
+      const sql = query.toSQL(new IndentedQueryRenderer(2));
+      expect(sql).toBe("CREATE INDEX idx_data_field ON docs (json_extract(data, '$.field'))");
+    });
+
+    it('should allow COLUMN expression for column reference', () => {
+      const query = CREATE_INDEX('idx_users_email')
+        .on('users', COLUMN('email'));
+
+      const sql = query.toSQL(new CompactQueryRenderer());
+      expect(sql).toBe('CREATE INDEX idx_users_email ON users (email)');
     });
   });
 });
