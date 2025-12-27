@@ -300,6 +300,80 @@ console.log(upsertWithReturn.toSQL());
 // RETURNING counter_key, value
 ```
 
+### CREATE TABLE
+
+Create tables with columns, constraints, and SQLite options:
+
+```typescript
+import { CREATE_TABLE } from '@shaxpir/squilt';
+
+// Simple table with primary key
+const createUsers = CREATE_TABLE('users')
+  .column('id', 'INTEGER', { primaryKey: true })
+  .column('name', 'TEXT', { notNull: true })
+  .column('email', 'TEXT', { unique: true })
+  .ifNotExists();
+console.log(createUsers.toSQL());
+// CREATE TABLE IF NOT EXISTS users (
+//   id INTEGER PRIMARY KEY,
+//   name TEXT NOT NULL,
+//   email TEXT UNIQUE
+// )
+
+// Table with foreign key
+const createOrders = CREATE_TABLE('orders')
+  .column('id', 'INTEGER', { primaryKey: true })
+  .column('user_id', 'INTEGER')
+  .column('total', 'REAL')
+  .foreignKey(['user_id'], { table: 'users', column: 'id' });
+```
+
+### CREATE INDEX
+
+Create indexes with support for expressions:
+
+```typescript
+import { CREATE_INDEX, COLUMN, FN, EQ } from '@shaxpir/squilt';
+import { StringLiteral } from '@shaxpir/squilt';
+
+// Simple column index
+const simpleIndex = CREATE_INDEX('idx_users_email')
+  .on('users', 'email');
+// CREATE INDEX idx_users_email ON users (email)
+
+// Composite index
+const compositeIndex = CREATE_INDEX('idx_orders_user_date')
+  .on('orders', ['user_id', 'created_at']);
+// CREATE INDEX idx_orders_user_date ON orders (user_id, created_at)
+
+// Expression index (JSON fields)
+const jsonIndex = CREATE_INDEX('idx_data_field')
+  .on('docs', FN('json_extract', COLUMN('data'), new StringLiteral('$.type')));
+// CREATE INDEX idx_data_field ON docs (json_extract(data, '$.type'))
+
+// Expression index (case-insensitive)
+const lowerIndex = CREATE_INDEX('idx_email_lower')
+  .on('users', FN('LOWER', COLUMN('email')));
+// CREATE INDEX idx_email_lower ON users (LOWER(email))
+
+// Mixed columns and expressions
+const mixedIndex = CREATE_INDEX('idx_composite')
+  .on('users', ['id', FN('LOWER', COLUMN('name'))]);
+// CREATE INDEX idx_composite ON users (id, LOWER(name))
+
+// Unique index
+const uniqueIndex = CREATE_INDEX('idx_email')
+  .on('users', 'email')
+  .unique();
+// CREATE UNIQUE INDEX idx_email ON users (email)
+
+// Partial index (filtered)
+const partialIndex = CREATE_INDEX('idx_active_users')
+  .on('users', 'email')
+  .where(EQ(COLUMN('active'), true));
+// CREATE INDEX idx_active_users ON users (email) WHERE (active = 1)
+```
+
 ### DROP TABLE and DROP INDEX
 
 Remove tables and indexes from the database:
