@@ -51,7 +51,7 @@ export {
   // Columns
   COLUMN,
   // Select queries
-  SELECT, SELECT_DISTINCT, FROM, UNION,
+  SELECT, SELECT_DISTINCT, FROM, UNION, UNION_ALL,
   // Joins
   JOIN, LEFT_JOIN, CROSS_JOIN,
   // Functions

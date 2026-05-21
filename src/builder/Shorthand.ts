@@ -224,6 +224,12 @@ export function UNION(...queries: SelectQuery[]): SelectQuery {
   return query;
 }
 
+export function UNION_ALL(...queries: SelectQuery[]): SelectQuery {
+  const query = QueryBuilder.select();
+  queries.forEach(q => query.unionAll(q));
+  return query;
+}
+
 export function INTERSECT(...queries: SelectQuery[]): SelectQuery {
   const query = QueryBuilder.select();
   queries.forEach(q => query.intersect(q));

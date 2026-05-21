@@ -18,6 +18,7 @@ export class SelectQuery implements SqlTreeNode {
   private _having: Expression | null = null;
   private _with: With[] = [];
   private _union: SelectQuery[] = [];
+  private _unionAll: SelectQuery[] = [];
   private _intersect: SelectQuery[] = [];
   private _except: SelectQuery[] = [];
   private _orderBy: OrderBy[] = [];
@@ -89,6 +90,11 @@ export class SelectQuery implements SqlTreeNode {
 
   public union(query: SelectQuery): SelectQuery {
     this._union.push(query);
+    return this;
+  }
+
+  public unionAll(query: SelectQuery): SelectQuery {
+    this._unionAll.push(query);
     return this;
   }
 

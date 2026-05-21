@@ -429,6 +429,9 @@ export class IndentedQueryRenderer
     if (node['_union'].length > 0) {
       parts.push(node['_union'].map(u => `${this.getIndent()}UNION\n${u.accept(this)}`).join('\n'));
     }
+    if (node['_unionAll'].length > 0) {
+      parts.push(node['_unionAll'].map(u => `${this.getIndent()}UNION ALL\n${u.accept(this)}`).join('\n'));
+    }
     if (node['_intersect'].length > 0) {
       parts.push(node['_intersect'].map(i => `${this.getIndent()}INTERSECT\n${i.accept(this)}`).join('\n'));
     }
