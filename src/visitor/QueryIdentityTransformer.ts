@@ -392,7 +392,11 @@ export class QueryIdentityTransformer implements SqlTreeNodeTransformer {
   }
 
   visitFunctionExpression(node: FunctionExpression): SqlTreeNode | SqlTreeNode[] {
-    return new FunctionExpression(node.name as FunctionName, this.flatList(node.args.map(a => a.accept(this))) as Expression[]);
+    return new FunctionExpression(
+      node.name as FunctionName,
+      this.flatList(node.args.map(a => a.accept(this))) as Expression[],
+      node.distinct
+    );
   }
 
   visitParamExpression(node: Param): SqlTreeNode | SqlTreeNode[] {
